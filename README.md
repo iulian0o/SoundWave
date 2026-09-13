@@ -50,6 +50,14 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
   - The time refresh to 0 when the song is changed and it's played again (fix)
 - Admin Dashboard UI:
   - No need to refresh the page while creating a new album or song (fix)
+- CI Automation Tests for production:
+  - backend: { `db.test.js`: check database connection, 
+              `admin.controller.test.js`: check the admin permisions and controlls, 
+              `auth.middleware.test.js`: check the bridge between authorization and authentication }
+  - frontend: {`AuthProvider.test.tsx`: check the page render when the auth fails or passes,
+               `useAuthStore.test.ts`: check if admin is true or false and render the message set,
+               `useChatStore.test.tsx`: check if messages are permitted to be sent or not
+               `useMusciStore.test.tsx`: check if the status is correct after deteleing adding or fetching songs or albums }
 
 ### Started, not finished
 - Chat page and `useChatStore` exist as an early scaffold but aren't built out yet
