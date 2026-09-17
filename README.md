@@ -61,12 +61,7 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
 
 ### Started, not finished
 - Chat page and `useChatStore` exist as an early scaffold but aren't built out yet
-
-## What's Not Built Yet
-- Chat / messaging UI
-- Search
-- Playlist / library page
-- User profile page
+- TODO: Set the playback state for each user
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
