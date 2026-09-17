@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { axiosInstance } from "../lib/axios"
 import type { Song } from "../types/index.ts"
 
 interface PlayerStore {
@@ -18,6 +19,9 @@ interface PlayerStore {
   saveSongPosition: (songId: string, time: number) => void;
   getSongPosition: (songId: string) => number;
 
+  hydrateFromServer: (song: Song, position: number) => void;
+  fetchLastPlayback: () => Promise<void>;
+  syncPlaybackToServer: (songId: string, position: number) => void;
 }
 
 export const usePlayerStore = create<PlayerStore>()(
@@ -76,7 +80,6 @@ export const usePlayerStore = create<PlayerStore>()(
         }
       },
 
-      // persistence backed position tracking
       saveSongPosition: (songId: string, time: number) => {
         set((state) => ({
           savedPositions: { ...state.savedPositions, [songId]: time }
@@ -86,9 +89,31 @@ export const usePlayerStore = create<PlayerStore>()(
       getSongPosition: (songId: string) => {
         return get().savedPositions[songId] ?? 0;
       },
+
+      hydrateFromServer: (song, position) => {
+        if (get().currentSong) return;
+        set({ currentSong: song, isPlaying: false });
+        get().saveSongPosition(song._id, position);
+      },
+
+      fetchLastPlayback: async () => {
+        if (get().currentSong) return;
+        try {
+          const response = await axiosInstance.get("/playback-state");
+          if (response.data) {
+            const { song, position } = response.data;
+            get().hydrateFromServer(song, position);
+          }
+        } catch {
+          // non-critical, fail silently
+        }
+      },
+
+      syncPlaybackToServer: (songId, position) => {
+        axiosInstance.put("/playback-state", { songId, position }).catch(() => {});
+      },
     }),
     {
-      // local storage for now
       name: "playback-positions", 
       partialize: (state) => ({ savedPositions: state.savedPositions }),
     }

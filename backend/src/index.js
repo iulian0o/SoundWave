@@ -14,7 +14,7 @@ import adminRoutes from './routes/admin.route.js';
 import songRoutes from './routes/song.route.js';
 import albumRoutes from './routes/album.route.js';
 import statsRoutes from './routes/stats.route.js';
-import playbackStateRoutes from "./routes/playbackState.route";
+import playbackStateRoutes from "./routes/playbackState.route.js";
 
 dotenv.config();
 

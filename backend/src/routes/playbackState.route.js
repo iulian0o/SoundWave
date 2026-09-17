@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { protectRoute } from "../middleware/auth.middleware";
-import { getPlaybackState, savePlaybackState } from './../controllers/playbackState.controller';
+import { protectRoute } from "../middleware/auth.middleware.js";
+import { getPlaybackState, savePlaybackState } from './../controllers/playbackState.controller.js';
 
 const router = Router();
 
