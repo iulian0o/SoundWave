@@ -107,5 +107,14 @@ export default function AudioPlayer() {
 		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
 	}, [currentSong, saveSongPosition]);
 
+	useEffect(() => {
+		return () => {
+			const audio = audioRef.current;
+			const song = prevSongRef.current;
+			if (audio && song) saveSongPosition(song._id, audio.currentTime);
+			usePlayerStore.setState({ isPlaying: false });
+		};
+	}, [saveSongPosition]);
+
 	return <audio ref={audioRef} />;
 };

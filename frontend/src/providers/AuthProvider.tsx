@@ -67,13 +67,19 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     const runAuthCheck = async () => {
       setIsCheckingAuth(true);
-      if (isSignedIn) {
-        await checkAdminStatus();
-      } else {
-        reset();
+
+      try {
+        if (isSignedIn) {
+          await checkAdminStatus();
+        } else {
+          reset();
+        }
+      } catch (error) {
+        console.error("Failed to verify auth status", error);
+      } finally {
+        setIsCheckingAuth(false);
       }
-      setIsCheckingAuth(false);
-    };
+    }
 
     runAuthCheck();
   }, [isSignedIn, isLoaded, checkAdminStatus, reset]);

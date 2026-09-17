@@ -52,7 +52,6 @@ export default function MainLayout() {
         {!isMobile && (
           <>
             <ResizableHandle className="w-2 bg-bacl rounded-lg transition-colors" />
-
             {/* right sidebar */}
             <ResizablePanel
               defaultSize={20}
@@ -65,7 +64,6 @@ export default function MainLayout() {
           </>
         )}
       </ResizablePanelGroup>
-
       <PlaybackControlls />
     </div>
   );

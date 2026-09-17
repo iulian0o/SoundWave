@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - CLIENT_URL=http://localhost:8080
+      - NODE_ENV=development
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

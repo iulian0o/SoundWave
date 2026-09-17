@@ -1,13 +1,14 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "seed:songs": "node src/seeds/songs.js",
-    "seed:albums": "node src/seeds/albums.js"
+    "seed:albums": "node src/seeds/albums.js",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,8 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2",
+    "vitest": "^5.0.0"
   }
 }

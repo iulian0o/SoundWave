@@ -2,7 +2,7 @@ import { useSignIn } from "@clerk/react";
 import { Button } from "./ui/button";
 
 export default function SignInOAuthButtons() {
-  const { signIn, errors } = useSignIn();
+  const { signIn } = useSignIn();
 
   const signInWithGoogle = async () => {
     console.log("button clicked");

@@ -15,15 +15,15 @@ export default defineConfig([
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
-    
+
     languageOptions: {
       globals: globals.browser,
     },
-    
+
     rules: {
       "tailwindcss/suggest-canonical-classes": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "react-refresh/only-export-components": "warn",
     },
-
-    "react/props-types": "off",
   },
 ]);

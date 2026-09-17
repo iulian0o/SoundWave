@@ -228,7 +228,7 @@ export default function AddSongDialog() {
             <Select
               items={albumSelectItems}
 							value={newSong.album}
-							onValueChange={(value) => setNewSong({ ...newSong, album: value })}
+							onValueChange={(value) => setNewSong({ ...newSong, album: value ?? "" })}
 						>
 							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
 								<SelectValue placeholder='Select album' />

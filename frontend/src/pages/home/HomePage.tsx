@@ -2,7 +2,6 @@ import { useEffect } from "react"
 import { useMusicStore } from "../../stores/useMusicStore.ts";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import TopBar from "../../components/TopBar";
-import FeaturedGridSkeleton from '../../components/skeletons/FeaturedGridSkeleton.tsx';
 import FeaturedSection from './components/FeaturedSection';
 import SectionGrid from "./components/SectionGrid"
 
@@ -12,7 +11,6 @@ export default function HomePage() {
     fetchMadeForYouSongs,
     fetchTrendingSongs,
     madeForYouSongs,
-    featuredSongs,
     isLoading,
     trendingSongs,
   } = useMusicStore();
