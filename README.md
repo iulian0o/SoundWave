@@ -58,6 +58,9 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
                `useAuthStore.test.ts`: check if admin is true or false and render the message set,
                `useChatStore.test.tsx`: check if messages are permitted to be sent or not
                `useMusciStore.test.tsx`: check if the status is correct after deteleing adding or fetching songs or albums }
+- Playback State:
+    - song stays at the same time length for each user, where they left it
+    - fix: previous song was on resume instead of restart when accessed again
 
 ### Started, not finished
 - Chat page and `useChatStore` exist as an early scaffold but aren't built out yet
