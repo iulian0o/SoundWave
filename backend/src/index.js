@@ -3,10 +3,12 @@ import dotenv from 'dotenv';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import cors from 'cors';
+import { fileURLToPath } from "url";
+import { createServer } from "http";
+import { clerkMiddleware } from '@clerk/express';
 
 import { connectDB } from './lib/db.js';
-import { clerkMiddleware } from '@clerk/express';
-import { fileURLToPath } from "url";
+import { initializeSocket } from "./lib/socket";
 
 import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
@@ -23,6 +25,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT;
 
+const httpServer = createServer(app);
+initializeSocket(httpServer);
+
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
@@ -36,7 +41,7 @@ app.use(
     tempFileDir: path.join(__dirname, "tmp"),
     createParentPath: true,
     limits: {
-      fileSize: 10 * 1024 * 1024 // 10mb max file size
+      fileSize: 10 * 1024 * 1024
   }
   })
 );
@@ -53,9 +58,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message });
 });
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   connectDB();
 });
-
-// todo: socket.io /
