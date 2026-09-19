@@ -9,6 +9,7 @@ interface PlayerStore {
   queue: Song[];
   currentIndex: number;
   savedPositions: Record<string, number>;
+  shouldResumeFromSaved: boolean;
 
   initializeQueue: (song: Song[]) => void;
   playAlbum: (song: Song[], startIndex?: number) => void;
@@ -18,10 +19,11 @@ interface PlayerStore {
   playPrevious: () => void;
   saveSongPosition: (songId: string, time: number) => void;
   getSongPosition: (songId: string) => number;
-
   hydrateFromServer: (song: Song, position: number) => void;
   fetchLastPlayback: () => Promise<void>;
   syncPlaybackToServer: (songId: string, position: number) => void;
+  flushPlaybackState: (currentTime?: number) => Promise<void>;
+  resetPlayback: () => void;
 }
 
 export const usePlayerStore = create<PlayerStore>()(
@@ -32,6 +34,7 @@ export const usePlayerStore = create<PlayerStore>()(
       queue: [],
       currentIndex: -1,
       savedPositions: {},
+      shouldResumeFromSaved: false,
 
       initializeQueue: (songs: Song[]) => {
         set({
@@ -43,7 +46,7 @@ export const usePlayerStore = create<PlayerStore>()(
       playAlbum: (songs: Song[], startIndex = 0) => {
         if (songs.length === 0) return;
         const song = songs[startIndex];
-        set({ queue: songs, currentSong: song, currentIndex: startIndex, isPlaying: true })
+        set({ queue: songs, currentSong: song, currentIndex: startIndex, isPlaying: true, shouldResumeFromSaved: false })
       },
 
       setCurrentSong: (song: Song | null) => {
@@ -52,7 +55,8 @@ export const usePlayerStore = create<PlayerStore>()(
         set({
           currentSong: song,
           isPlaying: true,
-          currentIndex: songIndex !== -1 ? songIndex : get().currentIndex
+          currentIndex: songIndex !== -1 ? songIndex : get().currentIndex, 
+          shouldResumeFromSaved: false,
         });
       },
 
@@ -64,7 +68,7 @@ export const usePlayerStore = create<PlayerStore>()(
         const { currentIndex, queue } = get();
         const nextIndex = currentIndex + 1;
         if (nextIndex < queue.length) {
-          set({ currentSong: queue[nextIndex], currentIndex: nextIndex, isPlaying: true });
+          set({ currentSong: queue[nextIndex], currentIndex: nextIndex, isPlaying: true, shouldResumeFromSaved: false });
         } else {
           set({ isPlaying: false });
         }
@@ -74,7 +78,7 @@ export const usePlayerStore = create<PlayerStore>()(
         const { currentIndex, queue } = get();
         const prevIndex = currentIndex - 1;
         if (prevIndex >= 0) {
-          set({ currentSong: queue[prevIndex], currentIndex: prevIndex, isPlaying: true });
+          set({ currentSong: queue[prevIndex], currentIndex: prevIndex, isPlaying: true, shouldResumeFromSaved: false });
         } else {
           set({ isPlaying: false });
         }
@@ -92,7 +96,7 @@ export const usePlayerStore = create<PlayerStore>()(
 
       hydrateFromServer: (song, position) => {
         if (get().currentSong) return;
-        set({ currentSong: song, isPlaying: false });
+        set({ currentSong: song, isPlaying: false, shouldResumeFromSaved: true });
         get().saveSongPosition(song._id, position);
       },
 
@@ -104,14 +108,37 @@ export const usePlayerStore = create<PlayerStore>()(
             const { song, position } = response.data;
             get().hydrateFromServer(song, position);
           }
-        } catch {
-          // non-critical, fail silently
+        } catch (error: any) {
+          console.error(error)
         }
       },
 
       syncPlaybackToServer: (songId, position) => {
         axiosInstance.put("/playback-state", { songId, position }).catch(() => {});
       },
+
+      flushPlaybackState: async (currentTime?: number) => {
+        const song = get().currentSong;
+        if (!song) return;
+
+        const position = currentTime ?? get().savedPositions[song._id] ?? 0;
+
+        try {
+          await axiosInstance.put("/playback-state", { songId: song._id, position });
+        } catch (error: any){
+          console.error(error);
+        }
+      },
+      
+      resetPlayback: () => {
+        set({ 
+          currentSong: null,
+          isPlaying: false,
+          queue: [],
+          currentIndex: -1,
+          shouldResumeFromSaved: false,
+        })
+      }
     }),
     {
       name: "playback-positions", 

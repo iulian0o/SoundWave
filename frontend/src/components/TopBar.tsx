@@ -1,14 +1,24 @@
 import { Link } from "react-router";
-import { LayoutDashboardIcon } from "lucide-react";
-import { Show, UserButton } from "@clerk/react";
+import { LayoutDashboardIcon, LogOutIcon } from "lucide-react";
+import { Show, UserButton, useClerk } from "@clerk/react";
 import { useAuthStore } from './../stores/useAuthStore';
+import { usePlayerStore } from "../stores/usePlayerStore.ts";
 import { cn } from "../lib/utils.ts";
-import { buttonVariants } from "./ui/button";
+import { buttonVariants, Button } from "./ui/button";
 import SignInOAuthButtons from "./SignInOAuthButtons";
 
 export default function TopBar() {
   const { isAdmin } = useAuthStore();
-  console.log({ isAdmin });
+  const { signOut } = useClerk();
+  const resetPlayback = usePlayerStore((state) => state.resetPlayback);
+
+  const handleSignOut = async () => {
+    window.dispatchEvent(new Event("playback:flush"));
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    await signOut();
+
+    resetPlayback();
+  }
 
   return (
     <div
@@ -31,9 +41,14 @@ export default function TopBar() {
           <SignInOAuthButtons />
         </Show>
 
+        <Show when="signed-in">
+          <Button variant="ghost" size="icon" onClick={handleSignOut}>
+            <LogOutIcon className="size-4" />
+          </Button>
+        </Show>
+
         <UserButton />
       </div>
     </div>
   );
 }
-// debug Auth header

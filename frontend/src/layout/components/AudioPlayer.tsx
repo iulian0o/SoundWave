@@ -1,3 +1,6 @@
+import { useAuth } from "@clerk/react";
+import { setAxiosAuthToken } from "../../lib/axios.ts";
+
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import type { Song } from "@/types";
 import { useEffect, useRef } from "react";
@@ -5,116 +8,172 @@ import { useEffect, useRef } from "react";
 const POSITION_SAVE_INTERVAL_SECONDS = 5;
 
 export default function AudioPlayer() {
-	const audioRef = useRef<HTMLAudioElement>(null);
-	const prevSongRef = useRef<Song | null>(null);
-	const pendingSeekRef = useRef<number | null>(null);
-	const lastSavedTimeRef = useRef(0);
-	const hasRestoredInitialPositionRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const prevSongRef = useRef<Song | null>(null);
+  const pendingSeekRef = useRef<number | null>(null);
+  const lastSavedTimeRef = useRef(0);
+  const { isSignedIn, getToken } = useAuth();
 
-	const { currentSong, isPlaying, playNext, saveSongPosition, getSongPosition } = usePlayerStore();
+  const {
+    currentSong,
+    isPlaying,
+    playNext,
+    saveSongPosition,
+    getSongPosition,
+    syncPlaybackToServer,
+    fetchLastPlayback,
+    shouldResumeFromSaved,
+  } = usePlayerStore();
 
-	useEffect(() => {
-		if (isPlaying) audioRef.current?.play();
-		else audioRef.current?.pause();
-	}, [isPlaying]);
+  useEffect(() => {
+    if (!isSignedIn) return;
+    setAxiosAuthToken(getToken);
+    fetchLastPlayback();
+  }, [isSignedIn, getToken, fetchLastPlayback]);
 
-	useEffect(() => {
-		const audio = audioRef.current;
+  useEffect(() => {
+    if (isPlaying) audioRef.current?.play();
+    else audioRef.current?.pause();
+  }, [isPlaying]);
 
-		const handleEnded = () => {
-			if (currentSong) saveSongPosition(currentSong._id, 0);
-			playNext();
-		};
+  useEffect(() => {
+    const audio = audioRef.current;
 
-		audio?.addEventListener("ended", handleEnded);
-		return () => audio?.removeEventListener("ended", handleEnded);
-	}, [playNext, currentSong, saveSongPosition]);
+    const handleEnded = () => {
+      if (currentSong) saveSongPosition(currentSong._id, 0);
+      playNext();
+    };
 
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
+    audio?.addEventListener("ended", handleEnded);
+    return () => audio?.removeEventListener("ended", handleEnded);
+  }, [playNext, currentSong, saveSongPosition]);
 
-		const handleLoadedMetadata = () => {
-			if (pendingSeekRef.current !== null) {
-				audio.currentTime = pendingSeekRef.current;
-				pendingSeekRef.current = null;
-			}
-		};
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-		audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-		return () => audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-	}, []);
+    const handleLoadedMetadata = () => {
+      if (pendingSeekRef.current !== null) {
+        audio.currentTime = pendingSeekRef.current;
+        pendingSeekRef.current = null;
+      }
+    };
 
-	// handle song changes
-	useEffect(() => {
-		if (!audioRef.current || !currentSong) return;
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    return () =>
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+  }, []);
 
-		const audio = audioRef.current;
-		const isSongChange = prevSongRef.current?._id !== currentSong._id;
+  // handle song changes
+  useEffect(() => {
+    if (!audioRef.current || !currentSong) return;
 
-		if (isSongChange) {
-			audio.src = currentSong.audioUrl;
+    const audio = audioRef.current;
+    const isSongChange = prevSongRef.current?._id !== currentSong._id;
 
-			if (!hasRestoredInitialPositionRef.current) {
-				pendingSeekRef.current = getSongPosition(currentSong._id);
-			} else {
-				pendingSeekRef.current = 0;
-			}
-			hasRestoredInitialPositionRef.current = true;
+    if (isSongChange) {
+      audio.src = currentSong.audioUrl;
 
-			prevSongRef.current = currentSong;
-			lastSavedTimeRef.current = 0;
+      pendingSeekRef.current = shouldResumeFromSaved
+        ? getSongPosition(currentSong._id)
+        : 0;
 
-			if (isPlaying) audio.play();
-		}
-	}, [currentSong, isPlaying, getSongPosition]);
+      prevSongRef.current = currentSong;
+      lastSavedTimeRef.current = 0;
 
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
+      if (isPlaying) audio.play();
+    }
+  }, [currentSong, isPlaying, shouldResumeFromSaved, getSongPosition]);
 
-		const handleTimeUpdate = () => {
-			if (!currentSong) return;
-			if (audio.currentTime - lastSavedTimeRef.current >= POSITION_SAVE_INTERVAL_SECONDS) {
-				saveSongPosition(currentSong._id, audio.currentTime);
-				lastSavedTimeRef.current = audio.currentTime;
-			}
-		};
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-		audio.addEventListener("timeupdate", handleTimeUpdate);
-		return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
-	}, [currentSong, saveSongPosition]);
+    const handleTimeUpdate = () => {
+      if (!currentSong) return;
+      if (
+        audio.currentTime - lastSavedTimeRef.current >=
+        POSITION_SAVE_INTERVAL_SECONDS
+      ) {
+        saveSongPosition(currentSong._id, audio.currentTime);
+        if (isSignedIn) {
+          syncPlaybackToServer(currentSong._id, audio.currentTime);
+        }
+        lastSavedTimeRef.current = audio.currentTime;
+      }
+    };
 
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
+  }, [currentSong, saveSongPosition]);
 
-		const handlePause = () => {
-			if (currentSong) saveSongPosition(currentSong._id, audio.currentTime);
-		};
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-		audio.addEventListener("pause", handlePause);
-		return () => audio.removeEventListener("pause", handlePause);
-	}, [currentSong, saveSongPosition]);
+    const handlePause = () => {
+      if (!currentSong) return;
+      saveSongPosition(currentSong._id, audio.currentTime);
 
-	useEffect(() => {
-		const handleBeforeUnload = () => {
-			const audio = audioRef.current;
-			if (audio && currentSong) saveSongPosition(currentSong._id, audio.currentTime);
-		};
+      if (isSignedIn) {
+        syncPlaybackToServer(currentSong._id, audio.currentTime);
+      }
+    };
 
-		window.addEventListener("beforeunload", handleBeforeUnload);
-		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-	}, [currentSong, saveSongPosition]);
+    audio.addEventListener("pause", handlePause);
+    return () => audio.removeEventListener("pause", handlePause);
+  }, [currentSong, saveSongPosition]);
 
-	useEffect(() => {
-		return () => {
-			const audio = audioRef.current;
-			const song = prevSongRef.current;
-			if (audio && song) saveSongPosition(song._id, audio.currentTime);
-			usePlayerStore.setState({ isPlaying: false });
-		};
-	}, [saveSongPosition]);
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const audio = audioRef.current;
+      if (!audio || !currentSong) return;
 
-	return <audio ref={audioRef} />;
-};
+      saveSongPosition(currentSong._id, audio.currentTime);
+
+      if (isSignedIn) {
+        const payload = JSON.stringify({
+          songId: currentSong._id,
+          position: audio.currentTime,
+        });
+        navigator.sendBeacon(
+          "http://localhost:5000/api/playback-state",
+          new Blob([payload], { type: "application/json" }),
+        );
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [currentSong, saveSongPosition]);
+
+  useEffect(() => {
+    return () => {
+      const audio = audioRef.current;
+      const song = prevSongRef.current;
+      if (audio && song) {
+        saveSongPosition(song._id, audio.currentTime);
+
+        if (isSignedIn) {
+          syncPlaybackToServer(song._id, audio.currentTime);
+        }
+      }
+      usePlayerStore.setState({ isPlaying: false });
+    };
+  }, [saveSongPosition, isSignedIn, syncPlaybackToServer]);
+
+  useEffect(() => {
+  const handleFlushRequest = () => {
+    const audio = audioRef.current;
+    if (audio && currentSong) {
+      saveSongPosition(currentSong._id, audio.currentTime);
+      usePlayerStore.getState().flushPlaybackState(audio.currentTime);
+    }
+  };
+
+  window.addEventListener("playback:flush", handleFlushRequest);
+  return () => window.removeEventListener("playback:flush", handleFlushRequest);
+}, [currentSong, saveSongPosition]);
+
+  return <audio ref={audioRef} />;
+}
