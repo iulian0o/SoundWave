@@ -14,6 +14,7 @@ import adminRoutes from './routes/admin.route.js';
 import songRoutes from './routes/song.route.js';
 import albumRoutes from './routes/album.route.js';
 import statsRoutes from './routes/stats.route.js';
+import playbackStateRoutes from "./routes/playbackState.route.js";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use(
   })
 );
 
+app.use("/api/playback-state", playbackStateRoutes)
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
