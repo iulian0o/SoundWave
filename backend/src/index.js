@@ -8,7 +8,7 @@ import { createServer } from "http";
 import { clerkMiddleware } from '@clerk/express';
 
 import { connectDB } from './lib/db.js';
-import { initializeSocket } from "./lib/socket";
+import { initializeSocket } from "./lib/socket.js";
 
 import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
