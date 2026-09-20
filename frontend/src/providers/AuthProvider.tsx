@@ -3,29 +3,27 @@ import { useEffect, useRef, useState } from "react";
 import { Loader } from "lucide-react";
 import { axiosInstance } from "../lib/axios.ts";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useChatStore } from "../stores/useChatStore.ts";
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { getToken, isSignedIn, isLoaded } = useAuth();
+  const { getToken, isSignedIn, isLoaded, userId } = useAuth();
   const { checkAdminStatus, reset } = useAuthStore();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { initSocket, disconnectedSocket } = useChatStore();
 
-  // ref to get token so the interceptors that is registered once never calls a stale closure ot it
   const getTokenRef = useRef(getToken);
   useEffect(() => {
     getTokenRef.current = getToken;
   }, [getToken]);
 
-  // register request, response interceptors once, eject both on unmount
+  // Interceptors: ONLY handle the auth token now — registered once
   useEffect(() => {
     const requestInterceptorId = axiosInstance.interceptors.request.use(
       async (config) => {
         try {
           const token = await getTokenRef.current();
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-          } else {
-            delete config.headers.Authorization;
-          }
+          if (token) config.headers.Authorization = `Bearer ${token}`;
+          else delete config.headers.Authorization;
         } catch (error) {
           console.log("Error fetching token in interceptor", error);
           delete config.headers.Authorization;
@@ -61,25 +59,29 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  // admin check logic, decoupled from token-setting, with a race-free loading flag
+  useEffect(() => {
+    if (isSignedIn && userId) {
+      initSocket(userId);
+    }
+    return () => {
+      disconnectedSocket();
+    };
+  }, [isSignedIn, userId, initSocket, disconnectedSocket]);
+
   useEffect(() => {
     if (!isLoaded) return;
 
     const runAuthCheck = async () => {
       setIsCheckingAuth(true);
-
       try {
-        if (isSignedIn) {
-          await checkAdminStatus();
-        } else {
-          reset();
-        }
+        if (isSignedIn) await checkAdminStatus();
+        else reset();
       } catch (error) {
         console.error("Failed to verify auth status", error);
       } finally {
         setIsCheckingAuth(false);
       }
-    }
+    };
 
     runAuthCheck();
   }, [isSignedIn, isLoaded, checkAdminStatus, reset]);
