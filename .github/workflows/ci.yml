@@ -30,6 +30,9 @@ jobs:
       - name: Check for syntax errors
         run: node --check src/index.js
 
+      - name: Run tests
+        run: npm run test -- --run
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
@@ -52,6 +55,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Run tests
+        run: npm run test -- --run
 
       - name: Build
         run: npm run build
