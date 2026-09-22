@@ -33,6 +33,7 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
 - Song routes & controllers
 - User routes & controllers
 - A stats route has also been started
+- Real time messaging using websockets (`socket.io` & `socket.io-client`)
 
 ### Frontend
 - Auth Provider wired up with Clerk, plus a Google sign-in button
@@ -53,7 +54,8 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
 - CI Automation Tests for production:
   - backend: { `db.test.js`: check database connection, 
               `admin.controller.test.js`: check the admin permisions and controlls, 
-              `auth.middleware.test.js`: check the bridge between authorization and authentication }
+              `auth.middleware.test.js`: check the bridge between authorization and authentication,
+              `socket.test.js`: checks the user online status, creating and deleteing a message }
   - frontend: {`AuthProvider.test.tsx`: check the page render when the auth fails or passes,
                `useAuthStore.test.ts`: check if admin is true or false and render the message set,
                `useChatStore.test.tsx`: check if messages are permitted to be sent or not
@@ -61,9 +63,8 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
 - Playback State:
     - song stays at the same time length for each user, where they left it
     - fix: previous song was on resume instead of restart when accessed again
-
-### Started, not finished
-- Chat page and `useChatStore` exist as an early scaffold but aren't built out yet
+- Chat UI:
+    - not finished yet
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
