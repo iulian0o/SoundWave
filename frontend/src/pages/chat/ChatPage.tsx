@@ -6,7 +6,7 @@ import UserList from "./components/UserList"
 
 export default function ChatPage() {
   const { user } = useUser();
-  const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
+  const { /* messages */ selectedUser, fetchUsers, fetchMessages } = useChatStore();
 
   useEffect(() => {
     if (user) fetchUsers();
