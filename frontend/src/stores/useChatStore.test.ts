@@ -12,7 +12,7 @@ const { mockSocket } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("socket>io-client", () => ({
+vi.mock("socket.io-client", () => ({
   io: vi.fn(() => mockSocket),
 }));
 
