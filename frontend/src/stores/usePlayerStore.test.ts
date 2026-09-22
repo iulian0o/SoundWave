@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { usePlayerStore } from "./usePlayerStore.ts";
-import { axiosInstance } from "../lib/axios";
 
 vi.hoisted(() => {
   const store = new Map<string, string>();
