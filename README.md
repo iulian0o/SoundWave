@@ -64,7 +64,10 @@ A full-stack Spotify clone built with **React + Typescript** on the frontend and
     - song stays at the same time length for each user, where they left it
     - fix: previous song was on resume instead of restart when accessed again
 - Chat UI:
-    - not finished yet
+    - real time connections and messages
+    - display active users and chat history
+    - display current time message (24h cycle - EU France)
+    - Show current songs played by friends in real time
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
