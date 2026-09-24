@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { HomeIcon, Library } from "lucide-react";
+import { HomeIcon, Library, MessageCircleMore } from "lucide-react";
 import { useEffect } from "react";
 import { Show } from "@clerk/react";
 import { useMusicStore } from "../../stores/useMusicStore.ts";
@@ -45,7 +45,7 @@ export default function LeftSidebar() {
                 }),
               )}
             >
-              <HomeIcon className="mr-2 size-5" />
+              <MessageCircleMore className="mr-2 size-5" />
               <span className="hidden md:inline">Messages</span>
             </Link>
           </Show>
