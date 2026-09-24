@@ -1,7 +1,8 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import { axiosInstance } from "../lib/axios"
-import type { Song } from "../types/index.ts"
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { axiosInstance } from "../lib/axios";
+import type { Song } from "../types/index.ts";
+import { useChatStore } from "./useChatStore";
 
 interface PlayerStore {
   currentSong: Song | null;
@@ -26,6 +27,8 @@ interface PlayerStore {
   resetPlayback: () => void;
 }
 
+const socket = useChatStore.getState().socket;
+
 export const usePlayerStore = create<PlayerStore>()(
   persist(
     (set, get) => ({
@@ -40,35 +43,87 @@ export const usePlayerStore = create<PlayerStore>()(
         set({
           queue: songs,
           currentSong: get().currentSong || songs[0],
-          currentIndex: get().currentIndex == -1 ? 0 : get().currentIndex
-        })
+          currentIndex: get().currentIndex == -1 ? 0 : get().currentIndex,
+        });
       },
       playAlbum: (songs: Song[], startIndex = 0) => {
         if (songs.length === 0) return;
         const song = songs[startIndex];
-        set({ queue: songs, currentSong: song, currentIndex: startIndex, isPlaying: true, shouldResumeFromSaved: false })
+
+        if (socket.auth) {
+          socket.emit("update_activity", {
+            userId: socket.auth.userId,
+            activity: `Playing ${song.title} by ${song.artist}`,
+          });
+        }
+
+        set({
+          queue: songs,
+          currentSong: song,
+          currentIndex: startIndex,
+          isPlaying: true,
+          shouldResumeFromSaved: false,
+        });
       },
 
       setCurrentSong: (song: Song | null) => {
         if (!song) return;
-        const songIndex = get().queue.findIndex(s => s._id === song._id);
+
+        if (socket.auth) {
+          socket.emit("update_activity", {
+            userId: socket.auth.userId,
+            activity: `Playing ${song.title} by ${song.artist}`,
+          });
+        }
+
+        const songIndex = get().queue.findIndex((s) => s._id === song._id);
+
         set({
           currentSong: song,
           isPlaying: true,
-          currentIndex: songIndex !== -1 ? songIndex : get().currentIndex, 
+          currentIndex: songIndex !== -1 ? songIndex : get().currentIndex,
           shouldResumeFromSaved: false,
         });
       },
 
       togglePlay: () => {
+        const willStartPlaying = !get().isPlaying;
+
+        const currentSong = get().currentSong;
+
+        if (socket.auth) {
+          socket.emit("update_activity", {
+            userId: socket.auth.userId,
+            activity:
+              willStartPlaying && currentSong
+                ? `Playing ${currentSong.title} by ${currentSong.artist}`
+                : "Idle",
+          });
+        }
+
         set({ isPlaying: !get().isPlaying });
       },
 
       playNext: () => {
         const { currentIndex, queue } = get();
         const nextIndex = currentIndex + 1;
+
         if (nextIndex < queue.length) {
-          set({ currentSong: queue[nextIndex], currentIndex: nextIndex, isPlaying: true, shouldResumeFromSaved: false });
+          const nextSong = queue[nextIndex];
+
+          if (socket.auth) {
+            socket.emit("update_activit", {
+              userId: socket.auth.userId,
+              activity: `Playing ${nextSong.title} by ${nextSong.artist}`,
+            });
+          }
+
+          set({
+            currentSong: queue[nextIndex],
+            currentIndex: nextIndex,
+            isPlaying: true,
+            shouldResumeFromSaved: false,
+          });
         } else {
           set({ isPlaying: false });
         }
@@ -77,16 +132,38 @@ export const usePlayerStore = create<PlayerStore>()(
       playPrevious: () => {
         const { currentIndex, queue } = get();
         const prevIndex = currentIndex - 1;
+
         if (prevIndex >= 0) {
-          set({ currentSong: queue[prevIndex], currentIndex: prevIndex, isPlaying: true, shouldResumeFromSaved: false });
+          const prevSong = queue[prevIndex];
+
+          if (socket.auth) {
+            socket.emit("update_activity", {
+              userId: socket.auth.userId,
+              activity: `Playing ${prevSong.title} by ${prevSong.artist}`
+            })
+          }
+
+          set({
+            currentSong: queue[prevIndex],
+            currentIndex: prevIndex,
+            isPlaying: true,
+            shouldResumeFromSaved: false,
+          });
         } else {
           set({ isPlaying: false });
+
+          if (socket.auth) {
+            socket.emit("update_activity", {
+              userId: socket.auth.userId,
+              activity: `Idle`
+            })
+          }
         }
       },
 
       saveSongPosition: (songId: string, time: number) => {
         set((state) => ({
-          savedPositions: { ...state.savedPositions, [songId]: time }
+          savedPositions: { ...state.savedPositions, [songId]: time },
         }));
       },
 
@@ -96,7 +173,11 @@ export const usePlayerStore = create<PlayerStore>()(
 
       hydrateFromServer: (song, position) => {
         if (get().currentSong) return;
-        set({ currentSong: song, isPlaying: false, shouldResumeFromSaved: true });
+        set({
+          currentSong: song,
+          isPlaying: false,
+          shouldResumeFromSaved: true,
+        });
         get().saveSongPosition(song._id, position);
       },
 
@@ -109,12 +190,14 @@ export const usePlayerStore = create<PlayerStore>()(
             get().hydrateFromServer(song, position);
           }
         } catch (error: any) {
-          console.error(error)
+          console.error(error);
         }
       },
 
       syncPlaybackToServer: (songId, position) => {
-        axiosInstance.put("/playback-state", { songId, position }).catch(() => {});
+        axiosInstance
+          .put("/playback-state", { songId, position })
+          .catch(() => {});
       },
 
       flushPlaybackState: async (currentTime?: number) => {
@@ -124,25 +207,28 @@ export const usePlayerStore = create<PlayerStore>()(
         const position = currentTime ?? get().savedPositions[song._id] ?? 0;
 
         try {
-          await axiosInstance.put("/playback-state", { songId: song._id, position });
-        } catch (error: any){
+          await axiosInstance.put("/playback-state", {
+            songId: song._id,
+            position,
+          });
+        } catch (error: any) {
           console.error(error);
         }
       },
-      
+
       resetPlayback: () => {
-        set({ 
+        set({
           currentSong: null,
           isPlaying: false,
           queue: [],
           currentIndex: -1,
           shouldResumeFromSaved: false,
-        })
-      }
+        });
+      },
     }),
     {
-      name: "playback-positions", 
+      name: "playback-positions",
       partialize: (state) => ({ savedPositions: state.savedPositions }),
-    }
-  )
-)
+    },
+  ),
+);

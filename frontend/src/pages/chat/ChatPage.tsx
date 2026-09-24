@@ -9,6 +9,13 @@ import NoConversationPlaceHolder from "./components/NoConversationPlaceHolder";
 import ChatHeader from "./components/ChatHeader";
 import MessageInput from './components/MessageInput';
 
+const formatTime = (date: string) => {
+  return new Date(date).toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  })
+}
+
 export default function ChatPage() {
   const { user } = useUser();
   const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
@@ -53,7 +60,7 @@ export default function ChatPage() {
                       <div className={`rounded-lg p-3 max-w-[70%]
                         ${message.senderId === user?.id ? "bg-green-500" : "bg-zinc-800"}`}>
                           <p className="text-sm">{message.content}</p>
-                          <span className="text-xs text-zinc-300 mt-1 block">{message.createdAt}</span>
+                          <span className="text-xs text-zinc-300 mt-1 block">{formatTime(message.createdAt)}</span>
                       </div>
                     </div>
                   ))}
@@ -70,5 +77,3 @@ export default function ChatPage() {
     </main>
   );
 }
-
-// fix the messages not sending problem
