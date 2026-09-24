@@ -33,7 +33,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   users: [],
   isLoading: false,
   error: null,
-  socket: null,
+  socket: socket,
   isConnected: false,
   onlineUsers: new Set(),
   userActivities: new Map(),
@@ -55,59 +55,56 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  initSocket: async (userId) => {
-    if (!get().isConnected) {
-      socket.auth = { userId };
+initSocket: (userId) => {
+  if (get().isConnected) return;
 
-      socket.connect();
-      socket.emit("user_connected", userId);
+  socket.auth = { userId };
+  socket.off(); 
 
-      socket.on("users_online", (users: string[]) => {
-        set({ onlineUsers: new Set(users) });
-      });
+  socket.on("connect", () => {
+    socket.emit("user_connected", userId);
+  });
 
-      socket.on("activities", (activities: [string, string][]) => {
-        set({ userActivities: new Map(activities) });
-      });
+  socket.on("users_online", (users: string[]) => {
+    set({ onlineUsers: new Set(users) });
+  });
 
-      socket.on("user_connected", (userId: string) => {
-        set((state) => ({
-          onlineUsers: new Set([...state.onlineUsers, userId]),
-        }));
-      });
+  socket.on("activities", (activities: [string, string][]) => {
+    set({ userActivities: new Map(activities) });
+  });
 
-      socket.on("user_disconnected", (userId: string) => {
-        set((state) => {
-          const newOnlineUsers = new Set(state.onlineUsers);
-          newOnlineUsers.delete(userId);
+  socket.on("user_connected", (id: string) => {
+    set((state) => ({ onlineUsers: new Set([...state.onlineUsers, id]) }));
+  });
 
-          return { onlineUsers: newOnlineUsers };
-        });
-      });
+  socket.on("user_disconnected", (id: string) => {
+    set((state) => {
+      const next = new Set(state.onlineUsers);
+      next.delete(id);
+      return { onlineUsers: next };
+    });
+  });
 
-      socket.on("receive_message", (message: Message) => {
-        set((state) => ({
-          messages: [...state.messages, message]
-        }));
-      });
+  socket.on("receive_message", (message: Message) => {
+    if (message.senderId !== get().selectedUser?.clerkId) return;
+    set((state) => ({ messages: [...state.messages, message] }));
+  });
 
-      socket.on("message_sent", (message: Message) => {
-        set((state) => ({
-          messages: [...state.messages, message],
-        }));
-      });
+  socket.on("message_sent", (message: Message) => {
+    set((state) => ({ messages: [...state.messages, message] }));
+  });
 
-      socket.on("user_activities", ({ userId, activity }) => {
-        set((state) => {
-          const newActivities = new Map(state.userActivities);
-          newActivities.set(userId, activity);
-          return { userActivities: newActivities };
-        });
-      });
+  socket.on("user_activities", ({ userId, activity }) => {
+    set((state) => {
+      const next = new Map(state.userActivities);
+      next.set(userId, activity);
+      return { userActivities: next };
+    });
+  });
 
-      set({ isConnected: true });
-    }
-  },
+  socket.connect();
+  set({ isConnected: true });
+},
 
   disconnectedSocket: () => {
     if (get().isConnected) {
