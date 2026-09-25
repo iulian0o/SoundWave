@@ -30,6 +30,11 @@ const songSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Album',
     required: false
+  },
+
+  releaseYear: {
+    type: Number,
+    required: false
   }
 }, { timestamps: true });
 
