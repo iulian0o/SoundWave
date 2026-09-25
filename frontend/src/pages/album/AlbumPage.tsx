@@ -89,7 +89,7 @@ export default function AlbumPage() {
               <Button
                 onClick={handlePlayAlbum}
                 size="icon"
-                className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 
+                className="w-14 h-14 rounded-full bg-violet-400 hover:bg-violet-400 
                 hover:scale-105 transition-all"
               >
                 {isPlaying &&
@@ -135,7 +135,7 @@ export default function AlbumPage() {
                         <div className="flex items-center justify-center">
                           {isCurrentSong && isPlaying ? (
                             <>
-                              <div className="size-4 text-green-500 group-hover:hidden">
+                              <div className="size-4 text-violet-400 group-hover:hidden">
                                 ♫
                               </div>
                               <Pause className="h-4 w-4 hidden group-hover:block" />
