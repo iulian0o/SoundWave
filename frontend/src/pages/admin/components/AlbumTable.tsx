@@ -3,6 +3,7 @@ import { Calendar, Music, Trash2 } from 'lucide-react';
 import { useMusicStore } from '@/stores/useMusicStore';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
+import EditAlbumDialog from "./EditAlbumDialog";
 
 export default function AlbumTable() {
   const { albums, deleteAlbum, fetchAlbums } = useMusicStore();
@@ -46,6 +47,7 @@ export default function AlbumTable() {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex gap-2 justify-end">
+                <EditAlbumDialog album={album} />
                 <Button
                   variant='ghost'
                   size='sm'

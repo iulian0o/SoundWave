@@ -143,7 +143,7 @@ export default function AddAlbumDialog() {
 					</Button>
 					<Button
 						onClick={handleSubmit}
-						className='bg-violet-500 hover:bg-violet-600'
+						className='bg-violet-400 hover:bg-violet-500'
 						disabled={isLoading || !imageFile || !newAlbum.title || !newAlbum.artist}
 					>
 						{isLoading ? "Creating..." : "Add Album"}
