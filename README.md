@@ -1,6 +1,8 @@
-# Spotify+
+# SoundWave
 
-A full-stack Spotify clone built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification. This project is currently a work in progress.
+A full-stack streaming music application, with real time connections built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification and **Websockets** for real time message connections.
+
+## How's like to use SoundWave?
 
 ## Tech Stack
 

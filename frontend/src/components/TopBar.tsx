@@ -26,8 +26,8 @@ export default function TopBar() {
       backdrop-blur-md z-10"
     >
       <div className="flex gap-2 items-center">
-        <img src="/spotify.png" className="size-8" alt="Spotify logo"/>
-          Spotify
+        <img src="/SoundWave.png" className="size-8" alt="SoundWave logo"/>
+          SoundWave
         </div>
       <div className="flex items-center gap-4">
         {isAdmin && (
