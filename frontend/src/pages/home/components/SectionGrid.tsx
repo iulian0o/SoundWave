@@ -1,6 +1,6 @@
 import type { Song } from "../../../types/index.ts";
-import { Button } from "../../../components/ui/button";
 import SectionGridSkeleton from "./SectionGridSkeleton";
+import PlayButton from './PlayButton';
 
 type SectionGridProps = {
 	title: string;
@@ -14,13 +14,10 @@ export default function SectionGrid({ songs, title, isLoading }: SectionGridProp
 		<div className='mb-8'>
 			<div className='flex items-center justify-between mb-4'>
 				<h2 className='text-xl sm:text-2xl font-bold'>{title}</h2>
-				<Button variant='link' className='text-sm text-zinc-400 hover:text-white'>
-					Show all
-				</Button>
 			</div>
 
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-				{songs.map((song) => (
+				{songs.map((song, index) => (
 					<div
 						key={song._id}
 						className='bg-zinc-800/40 p-4 rounded-md hover:bg-zinc-700/40 transition-all group cursor-pointer'
@@ -33,8 +30,7 @@ export default function SectionGrid({ songs, title, isLoading }: SectionGridProp
 									className='w-full h-full object-cover transition-transform duration-300 
 									group-hover:scale-105'
 								/>
-
-                {/* TODO: add play button */}
+                <PlayButton song={song} songs={songs} index={index} />
 							</div>
 						</div>
 						<h3 className='font-medium mb-2 truncate'>{song.title}</h3>

@@ -2,13 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import {
-  Laptop2,
   ListMusic,
-  Mic2,
   Pause,
   Play,
   Repeat,
-  Shuffle,
   SkipBack,
   SkipForward,
   Volume1,
@@ -21,11 +18,22 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
+const VOLUME_STORAGE_KEY = "playback:volume";
+const DEFAULT_VOLUME = 75;
+
 export default function PlaybackControlls() {
   const { currentSong, isPlaying, togglePlay, playNext, playPrevious } =
     usePlayerStore();
 
-  const [volume, setVolume] = useState(75);
+  const [volume, setVolume] = useState(() => {
+    try {
+      const saved = localStorage.getItem(VOLUME_STORAGE_KEY);
+
+      return saved !== null ? Number(saved) : DEFAULT_VOLUME;
+    } catch {
+      return DEFAULT_VOLUME;
+    }
+  });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -54,6 +62,12 @@ export default function PlaybackControlls() {
       audio.removeEventListener("ended", handleEnded);
     };
   }, [currentSong]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume])
 
   const handleSeek = (value: number | readonly number[]) => {
     const time = Array.isArray(value) ? value[0] : value;
@@ -92,14 +106,6 @@ export default function PlaybackControlls() {
             <Button
               size="icon"
               variant="ghost"
-              className="hidden sm:inline-flex hover:text-white text-zinc-400"
-            >
-              <Shuffle className="h-4 w-4" />
-            </Button>
-
-            <Button
-              size="icon"
-              variant="ghost"
               className="hover:text-white text-zinc-400"
               onClick={playPrevious}
               disabled={!currentSong}
@@ -128,11 +134,13 @@ export default function PlaybackControlls() {
             >
               <SkipForward className="h-4 w-4" />
             </Button>
+            
             <Button
               size="icon"
               variant="ghost"
               className="hidden sm:inline-flex hover:text-white text-zinc-400"
             >
+            {/* Make it functional */}
               <Repeat className="h-4 w-4" />
             </Button>
           </div>
@@ -154,26 +162,13 @@ export default function PlaybackControlls() {
 
         {/* volume controls */}
         <div className="hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="hover:text-white text-zinc-400"
-          >
-            <Mic2 className="h-4 w-4" />
-          </Button>
+
           <Button
             size="icon"
             variant="ghost"
             className="hover:text-white text-zinc-400"
           >
             <ListMusic className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="hover:text-white text-zinc-400"
-          >
-            <Laptop2 className="h-4 w-4" />
           </Button>
 
           <div className="flex items-center gap-2">
@@ -196,6 +191,15 @@ export default function PlaybackControlls() {
                   setVolume(vol);
                   if (audioRef.current) {
                     audioRef.current.volume = vol / 100;
+                  }
+                }}
+                onValueCommitted={(value) => {
+                  const vol = Array.isArray(value) ? value[0] : value;
+
+                  try {
+                    localStorage.setItem(VOLUME_STORAGE_KEY, String(vol));
+                  } catch {
+                    // pass
                   }
                 }}
               />

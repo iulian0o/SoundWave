@@ -105,7 +105,7 @@ export default function AddSongDialog() {
   return (
     <Dialog open={songDialogOpen} onOpenChange={setSongDialogOpen}>
       <DialogTrigger>
-        <Button className="bg-emerald-500 hover:bg-emerald-600 text-black">
+        <Button className="bg-purple-400 hover:bg-purple-500 text-black">
           <Plus className="mr-2 h-4 w-4" />
           Add Song
         </Button>
@@ -148,7 +148,7 @@ export default function AddSongDialog() {
             <div className="text-center">
               {files.image ? (
                 <div className="space-y-2">
-                  <div className="text-sm text-emerald-500">
+                  <div className="text-sm text-purple-400">
                     Image selected:
                   </div>
                   <div className="text-xs text-zinc-400">
