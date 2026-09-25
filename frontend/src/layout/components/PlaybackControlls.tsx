@@ -18,11 +18,22 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
+const VOLUME_STORAGE_KEY = "playback:volume";
+const DEFAULT_VOLUME = 75;
+
 export default function PlaybackControlls() {
   const { currentSong, isPlaying, togglePlay, playNext, playPrevious } =
     usePlayerStore();
 
-  const [volume, setVolume] = useState(75);
+  const [volume, setVolume] = useState(() => {
+    try {
+      const saved = localStorage.getItem(VOLUME_STORAGE_KEY);
+
+      return saved !== null ? Number(saved) : DEFAULT_VOLUME;
+    } catch {
+      return DEFAULT_VOLUME;
+    }
+  });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -51,6 +62,12 @@ export default function PlaybackControlls() {
       audio.removeEventListener("ended", handleEnded);
     };
   }, [currentSong]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume])
 
   const handleSeek = (value: number | readonly number[]) => {
     const time = Array.isArray(value) ? value[0] : value;
@@ -174,6 +191,15 @@ export default function PlaybackControlls() {
                   setVolume(vol);
                   if (audioRef.current) {
                     audioRef.current.volume = vol / 100;
+                  }
+                }}
+                onValueCommitted={(value) => {
+                  const vol = Array.isArray(value) ? value[0] : value;
+
+                  try {
+                    localStorage.setItem(VOLUME_STORAGE_KEY, String(vol));
+                  } catch {
+                    // pass
                   }
                 }}
               />
