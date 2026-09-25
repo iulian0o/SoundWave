@@ -142,5 +142,6 @@ dist
 .svelte-kit
 
 /backend/src/tmp
+todo.md
 
 # End of https://www.toptal.com/developers/gitignore/api/node

@@ -5,7 +5,7 @@ import AddAlbumDialog from "./AddAlbumDialog";
 
 export default function AlbumsTabContent() {
 	return (
-		<Card className='bg-zinc-800/50 border-zinc-700/50'>
+		<Card>
 			<CardHeader>
 				<div className='flex items-center justify-between'>
 					<div>

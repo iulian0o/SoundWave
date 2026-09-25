@@ -101,7 +101,7 @@ export default function AlbumPage() {
                   <Play className="h-7 w-7 text-black" />
                 )}
               </Button>
-            </div>
+          </div>
 
             {/* Table Section */}
             <div className="bg-black/20 backdrop-blur-sm">
@@ -165,7 +165,7 @@ export default function AlbumPage() {
                           </div>
                         </div>
                         <div className="flex items-center">
-                          {song.createdAt.split("T")[0]}
+                          {song.releaseYear ?? "-"}
                         </div>
                         <div className="flex items-center">
                           {formatDuration(song.duration)}

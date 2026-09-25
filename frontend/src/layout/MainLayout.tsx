@@ -42,7 +42,7 @@ export default function MainLayout() {
           <LeftSidebar />
         </ResizablePanel>
 
-        <ResizableHandle className="w-2 bg-bacl rounded-lg transition-colors" />
+        <ResizableHandle className="w-2 bg-black rounded-lg transition-colors" />
 
         {/* Main content */}
         <ResizablePanel defaultSize={isMobile ? 80 : 60}>
@@ -51,7 +51,7 @@ export default function MainLayout() {
 
         {!isMobile && (
           <>
-            <ResizableHandle className="w-2 bg-bacl rounded-lg transition-colors" />
+            <ResizableHandle className="w-2 bg-black rounded-lg transition-colors" />
             {/* right sidebar */}
             <ResizablePanel
               defaultSize={20}

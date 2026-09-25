@@ -72,7 +72,7 @@ export default function AddAlbumDialog() {
 	return (
 		<Dialog open={albumDialogOpen} onOpenChange={setAlbumDialogOpen}>
 			<DialogTrigger>
-				<Button className='bg-violet-500 hover:bg-violet-600 text-white'>
+				<Button className='bg-violet-400 hover:bg-violet-500 text-white'>
 					<Plus className='mr-2 h-4 w-4' />
 					Add Album
 				</Button>
@@ -143,7 +143,7 @@ export default function AddAlbumDialog() {
 					</Button>
 					<Button
 						onClick={handleSubmit}
-						className='bg-violet-500 hover:bg-violet-600'
+						className='bg-violet-400 hover:bg-violet-500'
 						disabled={isLoading || !imageFile || !newAlbum.title || !newAlbum.artist}
 					>
 						{isLoading ? "Creating..." : "Add Album"}
