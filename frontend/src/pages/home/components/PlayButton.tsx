@@ -4,12 +4,19 @@ import type { Song } from "../../../types/index.ts"
 import { Button } from "../../../components/ui/button"
 import { usePlayerStore } from "../../../stores/usePlayerStore.ts"
 
-export default function PlayButton({song}: {song: Song} ) {
-  const {currentSong, isPlaying, setCurrentSong, togglePlay} = usePlayerStore();
+type PlayButtonProps = {
+  song: Song,
+  songs?: Song[],
+  index?: number,
+}
+
+export default function PlayButton({song, songs, index = 0}: PlayButtonProps ) {
+  const {currentSong, isPlaying, playAlbum, setCurrentSong, togglePlay} = usePlayerStore();
   const isCurrentSong = currentSong?._id === song._id;
 
   const handlePlay = () => {
     if (isCurrentSong) togglePlay();
+    else if (songs) playAlbum(songs, index);
     else setCurrentSong(song);
   }
 

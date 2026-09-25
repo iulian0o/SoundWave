@@ -2,13 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import {
-  Laptop2,
   ListMusic,
-  Mic2,
   Pause,
   Play,
   Repeat,
-  Shuffle,
   SkipBack,
   SkipForward,
   Volume1,
@@ -92,14 +89,6 @@ export default function PlaybackControlls() {
             <Button
               size="icon"
               variant="ghost"
-              className="hidden sm:inline-flex hover:text-white text-zinc-400"
-            >
-              <Shuffle className="h-4 w-4" />
-            </Button>
-
-            <Button
-              size="icon"
-              variant="ghost"
               className="hover:text-white text-zinc-400"
               onClick={playPrevious}
               disabled={!currentSong}
@@ -128,11 +117,13 @@ export default function PlaybackControlls() {
             >
               <SkipForward className="h-4 w-4" />
             </Button>
+            
             <Button
               size="icon"
               variant="ghost"
               className="hidden sm:inline-flex hover:text-white text-zinc-400"
             >
+            {/* Make it functional */}
               <Repeat className="h-4 w-4" />
             </Button>
           </div>
@@ -154,26 +145,13 @@ export default function PlaybackControlls() {
 
         {/* volume controls */}
         <div className="hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="hover:text-white text-zinc-400"
-          >
-            <Mic2 className="h-4 w-4" />
-          </Button>
+
           <Button
             size="icon"
             variant="ghost"
             className="hover:text-white text-zinc-400"
           >
             <ListMusic className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="hover:text-white text-zinc-400"
-          >
-            <Laptop2 className="h-4 w-4" />
           </Button>
 
           <div className="flex items-center gap-2">

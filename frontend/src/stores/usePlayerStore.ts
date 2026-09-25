@@ -112,7 +112,7 @@ export const usePlayerStore = create<PlayerStore>()(
           const nextSong = queue[nextIndex];
 
           if (socket.auth) {
-            socket.emit("update_activit", {
+            socket.emit("update_activity", {
               userId: socket.auth.userId,
               activity: `Playing ${nextSong.title} by ${nextSong.artist}`,
             });
