@@ -1,15 +1,19 @@
-import { PlaybackState } from '../models/playbackState.model.js';
+import client from '../lib/redis.js';
+import { Song } from "../models/song.model.js";
 
 export const getPlaybackState = async (req, res, next) => {
   try {
     const { userId } = req.auth();
-    const state = await PlaybackState.findOne({ userId }).populate('songId');
+    const state = await client.hGetAll(`playback:${userId}`);
 
-    if (!state) return res.status(200).json(null);
+    if (!state.songId) return res.status(200).json(null);
+
+    const song = await Song.findById(state.songId);
 
     res.status(200).json({
-      song: state.songId,
-      position: state.position,
+      song,
+      position: Number(state.position),
+      volume: state.volume !== undefined ? Number(state.volume) : undefined,
     });
   } catch (error) {
     next(error);
@@ -25,13 +29,16 @@ export const savePlaybackState = async (req, res, next) => {
       return res.status(400).json({ message: "songId and position are required" });
     }
 
-    const state = await PlaybackState.findOneAndUpdate(
-      { userId },
-      { songId, position },
-      { upsert: true, new: true }
-    );
+    if (volume !== undefined && (typeof volume !== "number" || volume < 0 || volume > 100)) {
+      return res.status(400).json({ message: "volume must be a number between 0 and 100"})
+    }
 
-    res.status(200).json(state);
+    const fields = { songId, position: String(position), updatedAt: String(Date.now()) };
+    if (volume !== undefined) {
+      fields.volume = String(volume);
+    }
+
+    res.status(200).json({ songId, position, volume });
   } catch (error) {
     next(error);
   }
