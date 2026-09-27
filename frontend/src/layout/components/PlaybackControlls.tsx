@@ -18,25 +18,24 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-const VOLUME_STORAGE_KEY = "playback:volume";
-const DEFAULT_VOLUME = 75;
-
 export default function PlaybackControlls() {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrevious } =
-    usePlayerStore();
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    playNext,
+    playPrevious,
+    volume,
+    setVolume,
+  } = usePlayerStore();
 
-  const [volume, setVolume] = useState(() => {
-    try {
-      const saved = localStorage.getItem(VOLUME_STORAGE_KEY);
-
-      return saved !== null ? Number(saved) : DEFAULT_VOLUME;
-    } catch {
-      return DEFAULT_VOLUME;
-    }
-  });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume / 100;
+  }, [volume]);
 
   useEffect(() => {
     audioRef.current = document.querySelector("audio");
@@ -67,7 +66,7 @@ export default function PlaybackControlls() {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
     }
-  }, [volume])
+  }, [volume]);
 
   const handleSeek = (value: number | readonly number[]) => {
     const time = Array.isArray(value) ? value[0] : value;
@@ -134,13 +133,13 @@ export default function PlaybackControlls() {
             >
               <SkipForward className="h-4 w-4" />
             </Button>
-            
+
             <Button
               size="icon"
               variant="ghost"
               className="hidden sm:inline-flex hover:text-white text-zinc-400"
             >
-            {/* Make it functional */}
+              {/* Make it functional */}
               <Repeat className="h-4 w-4" />
             </Button>
           </div>
@@ -151,10 +150,18 @@ export default function PlaybackControlls() {
             </div>
             <Slider
               value={[currentTime]}
-              max={duration || 100}
+              max={duration || 0}
               step={1}
-              className="w-full hover:cursor-grab active:cursor-grabbing"
-              onValueChange={handleSeek}
+              className="hover:cursor-grab active:cursor-grabbing"
+              onValueChange={(value) => {
+                const time = Array.isArray(value) ? value[0] : value;
+                setCurrentTime(time); 
+              }}
+              onValueCommitted={(value) => {
+                const time = Array.isArray(value) ? value[0] : value;
+                handleSeek(time); 
+                usePlayerStore.getState().flushPlaybackState(time);
+              }}
             />
             <div className="text-xs text-zinc-400">{formatTime(duration)}</div>
           </div>
@@ -162,7 +169,6 @@ export default function PlaybackControlls() {
 
         {/* volume controls */}
         <div className="hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end">
-
           <Button
             size="icon"
             variant="ghost"
@@ -191,15 +197,6 @@ export default function PlaybackControlls() {
                   setVolume(vol);
                   if (audioRef.current) {
                     audioRef.current.volume = vol / 100;
-                  }
-                }}
-                onValueCommitted={(value) => {
-                  const vol = Array.isArray(value) ? value[0] : value;
-
-                  try {
-                    localStorage.setItem(VOLUME_STORAGE_KEY, String(vol));
-                  } catch {
-                    // pass
                   }
                 }}
               />

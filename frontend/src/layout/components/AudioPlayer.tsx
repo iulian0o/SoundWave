@@ -135,6 +135,7 @@ export default function AudioPlayer() {
         const payload = JSON.stringify({
           songId: currentSong._id,
           position: audio.currentTime,
+          volume: usePlayerStore.getState().volume,
         });
         navigator.sendBeacon(
           "http://localhost:5000/api/playback-state",
