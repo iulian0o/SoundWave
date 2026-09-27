@@ -1,5 +1,5 @@
+import "./env.js";
 import express from 'express';
-import dotenv from 'dotenv';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import cors from 'cors';
@@ -8,6 +8,7 @@ import { createServer } from "http";
 import { clerkMiddleware } from '@clerk/express';
 
 import { connectDB } from './lib/db.js';
+import { connectRedis } from "./lib/redis.js";
 import { initializeSocket } from "./lib/socket.js";
 
 import userRoutes from './routes/user.route.js';
@@ -16,9 +17,7 @@ import adminRoutes from './routes/admin.route.js';
 import songRoutes from './routes/song.route.js';
 import albumRoutes from './routes/album.route.js';
 import statsRoutes from './routes/stats.route.js';
-import playbackStateRoutes from "./routes/playbackState.route.js";
-
-dotenv.config();
+import playbackStateRoutes from './routes/playbackState.route.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,4 +60,5 @@ app.use((err, req, res, next) => {
 httpServer.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   connectDB();
+  connectRedis().catch((err) => console.error("Redis connection failed:", err));
 });

@@ -11,6 +11,7 @@ interface PlayerStore {
   currentIndex: number;
   savedPositions: Record<string, number>;
   shouldResumeFromSaved: boolean;
+  volume: number;
 
   initializeQueue: (song: Song[]) => void;
   playAlbum: (song: Song[], startIndex?: number) => void;
@@ -18,11 +19,16 @@ interface PlayerStore {
   togglePlay: () => void;
   playNext: () => void;
   playPrevious: () => void;
+  setVolume: (volume: number) => void;
   saveSongPosition: (songId: string, time: number) => void;
   getSongPosition: (songId: string) => number;
-  hydrateFromServer: (song: Song, position: number) => void;
+  hydrateFromServer: (song: Song, position: number, volume?: number) => void;
   fetchLastPlayback: () => Promise<void>;
-  syncPlaybackToServer: (songId: string, position: number) => void;
+  syncPlaybackToServer: (
+    songId: string,
+    position: number,
+    volume?: number,
+  ) => void;
   flushPlaybackState: (currentTime?: number) => Promise<void>;
   resetPlayback: () => void;
 }
@@ -38,6 +44,9 @@ export const usePlayerStore = create<PlayerStore>()(
       currentIndex: -1,
       savedPositions: {},
       shouldResumeFromSaved: false,
+      volume: 75,
+
+      setVolume: (volume) => set({ volume }),
 
       initializeQueue: (songs: Song[]) => {
         set({
@@ -139,8 +148,8 @@ export const usePlayerStore = create<PlayerStore>()(
           if (socket.auth) {
             socket.emit("update_activity", {
               userId: socket.auth.userId,
-              activity: `Playing ${prevSong.title} by ${prevSong.artist}`
-            })
+              activity: `Playing ${prevSong.title} by ${prevSong.artist}`,
+            });
           }
 
           set({
@@ -155,8 +164,8 @@ export const usePlayerStore = create<PlayerStore>()(
           if (socket.auth) {
             socket.emit("update_activity", {
               userId: socket.auth.userId,
-              activity: `Idle`
-            })
+              activity: `Idle`,
+            });
           }
         }
       },
@@ -171,12 +180,13 @@ export const usePlayerStore = create<PlayerStore>()(
         return get().savedPositions[songId] ?? 0;
       },
 
-      hydrateFromServer: (song, position) => {
+      hydrateFromServer: (song, position, volume) => {
         if (get().currentSong) return;
         set({
           currentSong: song,
           isPlaying: false,
           shouldResumeFromSaved: true,
+          ...(volume !== undefined && { volume }),
         });
         get().saveSongPosition(song._id, position);
       },
@@ -186,30 +196,33 @@ export const usePlayerStore = create<PlayerStore>()(
         try {
           const response = await axiosInstance.get("/playback-state");
           if (response.data) {
-            const { song, position } = response.data;
-            get().hydrateFromServer(song, position);
+            const { song, position, volume } = response.data;
+            get().hydrateFromServer(song, position, volume);
           }
         } catch (error: any) {
           console.error(error);
         }
       },
 
-      syncPlaybackToServer: (songId, position) => {
+      syncPlaybackToServer: (songId, position, volume) => {
         axiosInstance
-          .put("/playback-state", { songId, position })
+          .put("/playback-state", {
+            songId,
+            position,
+            volume: volume ?? get().volume,
+          })
           .catch(() => {});
       },
 
-      flushPlaybackState: async (currentTime?: number) => {
+      flushPlaybackState: async (currentTime) => {
         const song = get().currentSong;
         if (!song) return;
-
         const position = currentTime ?? get().savedPositions[song._id] ?? 0;
-
         try {
           await axiosInstance.put("/playback-state", {
             songId: song._id,
             position,
+            volume: get().volume,
           });
         } catch (error: any) {
           console.error(error);
@@ -228,7 +241,7 @@ export const usePlayerStore = create<PlayerStore>()(
     }),
     {
       name: "playback-positions",
-      partialize: (state) => ({ savedPositions: state.savedPositions }),
+      partialize: (state) => ({ savedPositions: state.savedPositions, volume: state.volume }),
     },
   ),
 );
