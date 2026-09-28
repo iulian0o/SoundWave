@@ -1,6 +1,6 @@
 # SoundWave
 
-A full-stack streaming music application, with real time connections built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification and **Websockets** for real time message connections.
+A full-stack streaming music application, with real time connections built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification and **Websockets** for real time message connections and **Redis** for caching playback state and volume state.
 
 ## How's like to use SoundWave?
 
@@ -22,6 +22,7 @@ A full-stack streaming music application, with real time connections built with 
 - Cloudinary for media storage (album covers, audio files)
 - express-fileupload for handling uploads
 - Socket.io, included for real-time features
+- Redis, caches the playback state and volume state
 
 ## Progress So Far
 
@@ -36,6 +37,7 @@ A full-stack streaming music application, with real time connections built with 
 - User routes & controllers
 - A stats route has also been started
 - Real time messaging using websockets (`socket.io` & `socket.io-client`)
+- Caching volume and playback state using `redis`
 
 ### Frontend
 - Auth Provider wired up with Clerk, plus a Google sign-in button
@@ -48,7 +50,7 @@ A full-stack streaming music application, with real time connections built with 
   - Zustand stores for the music library and the player (`useMusicStore`, `usePlayerStore`)
   - Song playback and queue handling
   - Reusable Play Button component
-  - Playback Controls component (play/pause, track navigation etc.)
+  - Playback Controls component (play/pause, track navigation etc.) *updated with redis, no more localstorage*
   - Song stays at the time length the user left it
   - The time refresh to 0 when the song is changed and it's played again (fix)
 - Admin Dashboard UI:
@@ -63,8 +65,7 @@ A full-stack streaming music application, with real time connections built with 
                `useChatStore.test.tsx`: check if messages are permitted to be sent or not
                `useMusciStore.test.tsx`: check if the status is correct after deteleing adding or fetching songs or albums }
 - Playback State:
-    - song stays at the same time length for each user, where they left it
-    - fix: previous song was on resume instead of restart when accessed again
+    - Storing the state of volume or playback state for each user Id using redis
 - Chat UI:
     - real time connections and messages
     - display active users and chat history
