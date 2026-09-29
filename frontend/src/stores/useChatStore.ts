@@ -15,9 +15,9 @@ interface ChatStore {
   selectedUser: User | null;
 
   fetchUsers: () => Promise<void>;
-  initSocket: (userId: string) => void;
+  initSocket: (getToken: () => Promise<string | null>) => Promise<void>;
   disconnectedSocket: () => void;
-  sendMessage: (receiverId: string, senderId: string, content: string) => void;
+  sendMessage: (receiverId: string, senderId: string, content: string, songId?: string) => void;
   fetchMessages: (userId: string) => Promise<void>;
   setSelectedUser: (user: User | null) => void;
 }
@@ -55,34 +55,37 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-initSocket: (userId) => {
-  if (get().isConnected) return;
+  initSocket: async (getToken: () => Promise<string | null>) => {
+    if (get().isConnected) return;
 
-  socket.auth = { userId };
-  socket.off(); 
+    const token = await getToken();
+    if (!token) return;
 
-  socket.on("connect", () => {
-    socket.emit("user_connected", userId);
-  });
+    socket.auth = { token };
+    socket.off(); 
 
-  socket.on("users_online", (users: string[]) => {
-    set({ onlineUsers: new Set(users) });
-  });
-
-  socket.on("activities", (activities: [string, string][]) => {
-    set({ userActivities: new Map(activities) });
-  });
-
-  socket.on("user_connected", (id: string) => {
-    set((state) => ({ onlineUsers: new Set([...state.onlineUsers, id]) }));
-  });
-
-  socket.on("user_disconnected", (id: string) => {
-    set((state) => {
-      const next = new Set(state.onlineUsers);
-      next.delete(id);
-      return { onlineUsers: next };
+    socket.on("connect", () => {
+      socket.emit("user_connected");
     });
+
+    socket.on("users_online", (users: string[]) => {
+      set({ onlineUsers: new Set(users) });
+    });
+
+    socket.on("activities", (activities: [string, string][]) => {
+      set({ userActivities: new Map(activities) });
+    });
+
+    socket.on("user_connected", (id: string) => {
+      set((state) => ({ onlineUsers: new Set([...state.onlineUsers, id]) }));
+  });
+
+    socket.on("user_disconnected", (id: string) => {
+      set((state) => {
+        const next = new Set(state.onlineUsers);
+        next.delete(id);
+        return { onlineUsers: next };
+      });
   });
 
   socket.on("receive_message", (message: Message) => {
@@ -104,7 +107,7 @@ initSocket: (userId) => {
 
   socket.connect();
   set({ isConnected: true });
-},
+  },
 
   disconnectedSocket: () => {
     if (get().isConnected) {
@@ -113,12 +116,16 @@ initSocket: (userId) => {
     }
   },
 
-  sendMessage: async (receiverId, senderId, content) => {
+  sendMessage: (receiverId: string, senderId: string, content: string, songId?: string) => {
     const socket = get().socket;
-
     if (!socket) return;
 
-    socket.emit("send_message", { receiverId, senderId, content});
+    socket.emit("send_message", {
+      receiverId,
+      senderId,
+      content,
+      ...(songId && { songId }),
+    });
   },
 
   fetchMessages: async (userId: string) => {

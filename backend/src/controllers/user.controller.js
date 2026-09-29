@@ -23,7 +23,7 @@ export const getMessages = async (req, res, next) => {
         { senderId: userId, receiverId: myId },
         { senderId: myId, receiverId: userId },
       ],
-    }).sort({ createdAt: 1 });
+    }).sort({ createdAt: 1 }).populate("song");
 
     res.status(200).json(messages);
   } catch (error) {
