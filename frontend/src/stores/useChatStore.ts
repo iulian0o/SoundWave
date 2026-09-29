@@ -15,7 +15,7 @@ interface ChatStore {
   selectedUser: User | null;
 
   fetchUsers: () => Promise<void>;
-  initSocket: (userId: string, getToken: () => Promise<string | null>) => Promise<void>;
+  initSocket: (getToken: () => Promise<string | null>) => Promise<void>;
   disconnectedSocket: () => void;
   sendMessage: (receiverId: string, senderId: string, content: string, songId?: string) => void;
   fetchMessages: (userId: string) => Promise<void>;
@@ -55,7 +55,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  initSocket: async (userId: string, getToken: () => Promise<string | null>) => {
+  initSocket: async (getToken: () => Promise<string | null>) => {
     if (get().isConnected) return;
 
     const token = await getToken();
