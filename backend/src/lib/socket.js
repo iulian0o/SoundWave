@@ -4,7 +4,7 @@ import { Message } from "../models/message.model.js";
 import { Song } from "../models/song.model.js";
 import { Server } from "socket.io";
 import { checkShareLimit, isDuplicateShare } from "./rateLimit.js";
-import { verifyToken } from "@clerk/backend";
+import { verifyToken } from "@clerk/express";
 
 dotenv.config();
 
@@ -22,7 +22,9 @@ export const initializeSocket = (server) => {
 
       if (!token) throw new Error("No token");
 
-      const payload = await verifyToken(token);
+      const payload = await verifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+      })
 
       socket.data.userId = payload.sub;
 
