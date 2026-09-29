@@ -61,7 +61,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (isSignedIn && userId) {
-      initSocket(userId, () => getTokenRef.current());
+      initSocket(() => getTokenRef.current());
     }
     return () => {
       disconnectedSocket();
