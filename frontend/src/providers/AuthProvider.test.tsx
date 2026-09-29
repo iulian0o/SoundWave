@@ -9,6 +9,7 @@ import { useAuth } from "@clerk/react";
 import { useAuthStore } from "../stores/useAuthStore";
 
 vi.mock("@clerk/react", () => ({ useAuth: vi.fn() }));
+vi.mock("../stores/useChatStore", () => ({ useChatStore: vi.fn().mockReturnValue({ initSocket: vi.fn(), disconnectedSocket: vi.fn() }) }));
 vi.mock("../stores/useAuthStore", () => ({ useAuthStore: vi.fn() }));
 
 afterEach(() => {

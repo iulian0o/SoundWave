@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import { useUser } from "@clerk/react";
+import { Play } from "lucide-react";
 import { useChatStore } from "../../stores/useChatStore.ts";
+import { usePlayerStore } from "../../stores/usePlayerStore.ts";
 import { ScrollArea } from "../../components/ui/scroll-area";
 import { Avatar, AvatarImage } from "../../components/ui/avatar";
+import { Button } from "../../components/ui/button";
 import TopBar from "../../components/TopBar";
 import UserList from "./components/UserList";
 import NoConversationPlaceHolder from "./components/NoConversationPlaceHolder";
@@ -19,6 +22,7 @@ const formatTime = (date: string) => {
 export default function ChatPage() {
   const { user } = useUser();
   const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
+  const { setCurrentSong } = usePlayerStore();
 
   useEffect(() => {
     if (user) fetchUsers();
@@ -59,8 +63,23 @@ export default function ChatPage() {
 
                       <div className={`rounded-lg p-3 max-w-[70%]
                         ${message.senderId === user?.id ? "bg-violet-500" : "bg-zinc-800"}`}>
-                          <p className="text-sm">{message.content}</p>
-                          <span className="text-xs text-zinc-300 mt-1 block">{formatTime(message.createdAt)}</span>
+                        {message.type === "song" && message.song && (
+                          <div className="flex items-center gap-3 bg-black/20 rounded-md p-2 mb-1 min-w-[220px]">
+                            <img src={message.song.imageUrl} alt={message.song.title} className="size-12 rounded" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{message.song.title}</div>
+                              <div className="text-xs text-zinc-300 truncate">{message.song.artist}</div>
+                            </div>
+                            <Button size="icon" variant="ghost" onClick={() => setCurrentSong(message.song!)}>
+                              <Play className="size-4" />
+                            </Button>
+                          </div>
+                        )}
+                        {message.type === "song" && !message.song && (
+                          <p className="text-sm italic text-zinc-400">This song is no longer available</p>
+                        )}
+                        {message.content && <p className="text-sm">{message.content}</p>}
+                        <span className="text-xs text-zinc-300 mt-1 block">{formatTime(message.createdAt)}</span>
                       </div>
                     </div>
                   ))}

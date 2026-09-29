@@ -1,6 +1,9 @@
+import { Send } from 'lucide-react';
+
 import { useMusicStore } from "../../../stores/useMusicStore.ts"
 import FeaturedGridSkeleton from '../../../components/skeletons/FeaturedGridSkeleton.tsx';
 import PlayButton from './PlayButton';
+import ShareSongDialog from "../../../pages/chat/components/ShareSongDialog"
 
 export default function FeaturedSection() {
   const {isLoading, featuredSongs, error} = useMusicStore();
@@ -22,6 +25,15 @@ export default function FeaturedSection() {
               <p className="text-sm text-zinc-400 truncate">{song.artist}</p>
             </div>
             <PlayButton song={song} songs={featuredSongs} index={index} />
+            <ShareSongDialog
+                  song={song}
+                  trigger={
+                    <button className="absolute bottom-3 right-14 bg-zinc-800/90 hover:bg-zinc-700 rounded-full p-2
+                      opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <Send className="size-4 text-white" />
+                    </button>
+                  }
+                />
           </div>
       ))}
     </div>

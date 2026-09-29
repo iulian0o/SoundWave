@@ -34,6 +34,8 @@ export interface Message {
   content: string;
   createdAt: string;
   updatedAt: string;
+  type: "text" | "song";
+  song?: Song | null;
 }
 
 export interface User {
