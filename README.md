@@ -1,6 +1,6 @@
 # SoundWave
 
-A full-stack streaming music application, with real time connections built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification and **Websockets** for real time message connections and **Redis** for caching playback state and volume state.
+A full-stack streaming music application (Spotify clone), with real time connections built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification and **Websockets** for real time message connections, **Redis** for caching playback state and volume state, **CI** pipeline for features testing before merging and **Docker** for creating images that instantiates a container such that it solves "it runs on my computer" problem.
 
 ## How's like to use SoundWave?
 
@@ -14,6 +14,7 @@ A full-stack streaming music application, with real time connections built with 
 - Axios for API requests
 - React Router for navigation
 - react-resizable-panels for the resizable layout
+- socket.io-client for fetching the request from database to display the message
 
 **Backend**
 - Express 5
@@ -35,6 +36,7 @@ A full-stack streaming music application, with real time connections built with 
 - Album routes & controllers
 - Song routes & controllers
 - User routes & controllers
+- Message routes & controller + song sharing
 - A stats route has also been started
 - Real time messaging using websockets (`socket.io` & `socket.io-client`)
 - Caching volume and playback state using `redis`
@@ -71,6 +73,10 @@ A full-stack streaming music application, with real time connections built with 
     - display active users and chat history
     - display current time message (24h cycle - EU France)
     - Show current songs played by friends in real time
+- ShareSongDialog:
+    - real time song sharing via chat page
+    - the content is playable from the dialog
+    - rate limiter per song with a token and a cooldown for not overloading the sending content
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
