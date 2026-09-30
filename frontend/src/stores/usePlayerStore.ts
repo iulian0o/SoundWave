@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { axiosInstance } from "../lib/axios";
@@ -12,6 +13,7 @@ interface PlayerStore {
   savedPositions: Record<string, number>;
   shouldResumeFromSaved: boolean;
   volume: number;
+  isQueueOpen: boolean;
 
   initializeQueue: (song: Song[]) => void;
   playAlbum: (song: Song[], startIndex?: number) => void;
@@ -31,9 +33,24 @@ interface PlayerStore {
   ) => void;
   flushPlaybackState: (currentTime?: number) => Promise<void>;
   resetPlayback: () => void;
+  toggleQueue: () => void;
+  addToQueue: (song: Song) => void;
+  playNextInQueue: (song: Song) => void;
+  removeFromQueue: (index: number) => void;
+  clearQueue: () => void;
 }
 
 const socket = useChatStore.getState().socket;
+
+const seed = (
+  s: Pick<PlayerStore, "queue" | "currentIndex" | "currentSong">,
+) =>
+  s.queue.length > 0
+    ? { queue: s.queue, currentIndex: s.currentIndex }
+    : {
+        queue: s.currentSong ? [s.currentSong] : [],
+        currentIndex: s.currentSong ? 0 : -1,
+      };
 
 export const usePlayerStore = create<PlayerStore>()(
   persist(
@@ -45,10 +62,17 @@ export const usePlayerStore = create<PlayerStore>()(
       savedPositions: {},
       shouldResumeFromSaved: false,
       volume: 75,
+      isQueueOpen: false,
+
+      toggleQueue: () => set((s) => ({ isQueueOpen: !s.isQueueOpen })),
 
       setVolume: (volume) => set({ volume }),
 
       initializeQueue: (songs: Song[]) => {
+        if (get().queue.length > 0) {
+          return;
+        }
+
         set({
           queue: songs,
           currentSong: get().currentSong || songs[0],
@@ -182,8 +206,15 @@ export const usePlayerStore = create<PlayerStore>()(
 
       hydrateFromServer: (song, position, volume) => {
         if (get().currentSong) return;
+
+        const idx = get().queue.findIndex((s) => s._id === song._id);
+
         set({
           currentSong: song,
+          ...(idx !== -1 
+            ? { currentIndex: idx }
+            : { queue: [song], currentIndex: 0 }
+          ),
           isPlaying: false,
           shouldResumeFromSaved: true,
           ...(volume !== undefined && { volume }),
@@ -196,7 +227,12 @@ export const usePlayerStore = create<PlayerStore>()(
         try {
           const response = await axiosInstance.get("/playback-state");
           if (response.data) {
-            const { song, position, volume } = response.data;
+            const { song, position, volume, queue } = response.data;
+
+            if (Array.isArray(queue) && queue.length > 0) {
+              set({ queue });
+            }
+
             get().hydrateFromServer(song, position, volume);
           }
         } catch (error: any) {
@@ -238,10 +274,110 @@ export const usePlayerStore = create<PlayerStore>()(
           shouldResumeFromSaved: false,
         });
       },
+
+      addToQueue: (song) => {
+        const state = get();
+        const { queue, currentIndex } = seed(state);
+
+        if (queue.some((s) => s._id === song._id)) {
+          toast("Already in queue");
+          return;
+        }
+
+        const next = [ ...queue, song];
+        const idx = Math.max(currentIndex, 0);
+
+        set({
+          queue: next,
+          currentIndex: idx,
+          currentSong: state.currentSong ?? next[idx],
+        });
+
+        toast.success("Added to queue");
+      },
+
+      playNextInQueue: (song) => {
+        const state = get();
+
+        if (state.currentSong?._id === song._id) {
+          toast("Already playing");
+          return;
+        }
+
+        let { queue, currentIndex } = seed(state);
+        const existing = queue.findIndex((s) => s._id === song._id);
+
+        if (existing !== -1) {
+          queue = queue.filter((_, i) => i !== existing);
+
+          if (existing < currentIndex) {
+            currentIndex -= 1;
+          }
+        }
+
+        const insertAt = currentIndex + 1;
+        const next = [...queue.slice(0, insertAt), song, ...queue.slice(insertAt)];
+        const idx = Math.max(currentIndex, 0);
+
+        set({
+          queue: next,
+          currentIndex: idx,
+          currentSong: state.currentSong ?? next[idx]
+        });
+        
+        toast.success('Will play next');
+      },
+
+      removeFromQueue: (index) => {
+        const { queue, currentIndex } = get();
+
+        if (index > 0 || index >= queue.length || index === currentIndex) {
+          return;
+        }
+
+        set({
+          queue: queue.filter((_, i) => i !== index),
+          currentIndex: index < currentIndex ? currentIndex -1 : currentIndex
+        });
+      },
+
+      clearQueue: () => {
+        const { currentSong} = get();
+
+        set({
+          queue: currentSong ? [currentSong] : [],
+          currentIndex: currentSong ? 0 : -1
+        })
+      },
     }),
     {
       name: "playback-positions",
-      partialize: (state) => ({ savedPositions: state.savedPositions, volume: state.volume }),
+      partialize: (state) => ({
+        savedPositions: state.savedPositions,
+        volume: state.volume,
+        queue: state.queue,
+        currentIndex: state.currentIndex
+      }),
     },
   ),
 );
+
+let queueSyncTimer: ReturnType<typeof setTimeout> | undefined;
+
+usePlayerStore.subscribe((state, prev) => {
+  if (state.queue === prev.queue) return;
+
+  // not syncing an empty queue
+  if (state.queue.length === 0) return;
+
+  clearTimeout(queueSyncTimer);
+  queueSyncTimer = setTimeout(async () => {
+    try {
+      await axiosInstance.put("/playback-state/queue", {
+        queue: state.queue.slice(0, 200).map((s) => s._id)
+      });
+    } catch {
+      // pass
+    }
+  }, 800)
+})
