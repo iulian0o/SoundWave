@@ -8,6 +8,7 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
 import ShareSongDialog from "../../pages/chat/components/ShareSongDialog";
+import SongMenu from "../../components/SongMenu";
 
 export const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -109,7 +110,7 @@ export default function AlbumPage() {
             <div className="bg-black/20 backdrop-blur-sm">
               {/* table header */}
               <div
-                className="grid grid-cols-[16px_4fr_2fr_1fr_32px] gap-4 px-10 py-2 text-sm 
+                className="grid grid-cols-[16px_4fr_2fr_1fr_64px] gap-4 px-10 py-2 text-sm 
       text-zinc-400 border-b border-white/5"
               >
                 <div>#</div>
@@ -130,7 +131,7 @@ export default function AlbumPage() {
                       <div
                         key={song._id}
                         onClick={() => handlePlaySong(index)}
-                        className="grid grid-cols-[16px_4fr_2fr_1fr_32px] gap-4 px-4 py-2 text-sm 
+                        className="grid grid-cols-[16px_4fr_2fr_1fr_64px] gap-4 px-4 py-2 text-sm 
               text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer"
                       >
                         <div className="flex items-center justify-center">
@@ -168,12 +169,8 @@ export default function AlbumPage() {
                         <div className="flex items-center">
                           {song.releaseYear ?? "-"}
                         </div>
-                        <div className="flex items-center">
-                          {formatDuration(song.duration)}
-                        </div>
-
                         <div
-                          className="flex items-center justify-end"
+                          className="flex items-center justify-end gap-3"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ShareSongDialog
@@ -183,6 +180,10 @@ export default function AlbumPage() {
                                 <Send className="size-4" />
                               </button>
                             }
+                          />
+                          <SongMenu
+                            song={song}
+                            className="bg-transparent p-0 text-zinc-400 hover:bg-transparent hover:text-white"
                           />
                         </div>
                       </div>
