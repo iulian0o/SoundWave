@@ -1,13 +1,11 @@
 {
   "name": "backend",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "seed:songs": "node src/seeds/songs.js",
-    "seed:albums": "node src/seeds/albums.js",
     "test": "vitest run"
   },
   "keywords": [],
