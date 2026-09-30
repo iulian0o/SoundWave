@@ -4,6 +4,7 @@ import type { Song } from "../../../types/index.ts";
 import SectionGridSkeleton from "./SectionGridSkeleton";
 import PlayButton from "./PlayButton";
 import ShareSongDialog from "../../../pages/chat/components/ShareSongDialog";
+import SongMenu from "../../../components/SongMenu";
 
 type SectionGridProps = {
   title: string;
@@ -33,6 +34,7 @@ export default function SectionGrid({ songs, title, isLoading }: SectionGridProp
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <PlayButton song={song} songs={songs} index={index} />
+                <SongMenu song={song} className="absolute top-2 right-2" />
                 <ShareSongDialog
                   song={song}
                   trigger={
