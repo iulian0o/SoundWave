@@ -4,15 +4,29 @@ import {
   ResizableHandle,
 } from "../components/ui/resizable";
 import { Outlet } from "react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import type { ImperativePanelHandle } from "react-resizable-panels";
+
+import { usePlayerStore } from "../stores/usePlayerStore.ts";
 
 import LeftSidebar from "./components/LeftSidebar";
 import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import PlaybackControlls from "./components/PlaybackControlls";
+import QueuePanel from "./components/QueuePanel";
 
 export default function MainLayout() {
   const [isMobile, setIsMobile] = useState(false);
+
+  const isQueueOpen = usePlayerStore((s) => s.isQueueOpen);
+
+  const rightPanelRef = useRef<ImperativePanelHandle>(null);
+
+  useEffect(() => {
+    if (isQueueOpen && rightPanelRef.current?.getSize() === 0) {
+      rightPanelRef.current.resize(20);
+    }
+  }, [isQueueOpen]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -59,7 +73,7 @@ export default function MainLayout() {
               maxSize={25}
               collapsedSize={0}
             >
-              <FriendsActivity />
+              {isQueueOpen ? <QueuePanel /> : <FriendsActivity />}
             </ResizablePanel>
           </>
         )}

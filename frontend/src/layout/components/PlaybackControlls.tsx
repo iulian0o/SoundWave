@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useEffect, useRef, useState } from "react";
 import {
   ListMusic,
   Pause,
@@ -10,7 +8,11 @@ import {
   SkipForward,
   Volume1,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { usePlayerStore } from "@/stores/usePlayerStore";
+import { cn } from "@/lib/utils";
+
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -27,6 +29,8 @@ export default function PlaybackControlls() {
     playPrevious,
     volume,
     setVolume,
+    isQueueOpen,
+    toggleQueue
   } = usePlayerStore();
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -172,7 +176,12 @@ export default function PlaybackControlls() {
           <Button
             size="icon"
             variant="ghost"
-            className="hover:text-white text-zinc-400"
+            onClick={toggleQueue}
+            aria-label="Toggle queue"
+            aria-pressed={isQueueOpen}
+            className={cn(
+              "hover:text-white", isQueueOpen ? "text-violet-400" : "text-zinc-400"
+            )}
           >
             <ListMusic className="h-4 w-4" />
           </Button>
