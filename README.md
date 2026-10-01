@@ -24,7 +24,6 @@ A full-stack streaming music application (Spotify clone), with real time connect
 - express-fileupload for handling uploads
 - Socket.io, included for real-time features
 - Redis, caches the playback state and volume state
-- rate limiter using `redis` for song sharing
 
 ## Progress So Far
 
@@ -41,6 +40,7 @@ A full-stack streaming music application (Spotify clone), with real time connect
 - A stats route has also been started
 - Real time messaging using websockets (`socket.io` & `socket.io-client`)
 - Caching volume and playback state using `redis`
+- Rate limiter using `redis` for song sharing
 
 ### Frontend
 - Auth Provider wired up with Clerk, plus a Google sign-in button
