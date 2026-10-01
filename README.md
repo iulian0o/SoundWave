@@ -77,6 +77,10 @@ A full-stack streaming music application (Spotify clone), with real time connect
     - real time song sharing via chat page
     - the content is playable from the dialog
     - rate limiter per song with a token and a cooldown for not overloading the sending content
+- Queue Panel and Options:
+    - cached queue memory for each user id
+    - user can choose when to start the song in queue
+    - dialog options on each song
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
