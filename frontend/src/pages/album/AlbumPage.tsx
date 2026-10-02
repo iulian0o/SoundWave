@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useLocation, useNavigate } from "react-router";
 import { Clock, Pause, Play, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,10 +21,33 @@ export default function AlbumPage() {
   const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
   const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const autoplaySongId = (location.state as { autoplaySongId?: string } | null)
+    ?.autoplaySongId;
+
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
   }, [fetchAlbumById, albumId]);
 
+  useEffect(() => {
+    // wait until the loaded album is the one in the URL (the store may still hold the previous album)
+    if (!autoplaySongId || !currentAlbum || currentAlbum._id !== albumId)
+      return;
+
+    const index = currentAlbum.songs.findIndex((s) => s._id === autoplaySongId);
+    if (index !== -1) playAlbum(currentAlbum.songs, index);
+
+    // clear the state so a refresh or back-navigation doesn't replay it
+    navigate(location.pathname, { replace: true, state: null });
+  }, [
+    autoplaySongId,
+    currentAlbum,
+    albumId,
+    playAlbum,
+    navigate,
+    location.pathname,
+  ]);
   if (isLoading) return null;
 
   const handlePlayAlbum = () => {
@@ -58,7 +81,6 @@ export default function AlbumPage() {
       <ScrollArea className="h-full rounded-md">
         {/* Main Content */}
         <div className="relative min-h-full">
-          {/* bg gradient */}
           <div
             className="absolute inset-0 bg-gradient-to-b from-zinc-700/80 via-zinc-900/80 to-zinc-900 pointer-events-none"
             aria-hidden="true"

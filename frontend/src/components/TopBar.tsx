@@ -32,6 +32,7 @@ export default function TopBar() {
         </div>
 
         <SearchBar />
+        
       <div className="flex items-center gap-4">
         {isAdmin && (
           <Link to={"/admin"} className={cn(buttonVariants({ variant: "outline"}))}>
