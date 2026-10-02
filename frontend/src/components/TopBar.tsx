@@ -6,6 +6,7 @@ import { usePlayerStore } from "../stores/usePlayerStore.ts";
 import { cn } from "../lib/utils.ts";
 import { buttonVariants, Button } from "./ui/button";
 import SignInOAuthButtons from "./SignInOAuthButtons";
+import SearchBar from "./SearchBar";
 
 export default function TopBar() {
   const { isAdmin } = useAuthStore();
@@ -29,6 +30,8 @@ export default function TopBar() {
         <img src="/SoundWave.png" className="size-8" alt="SoundWave logo"/>
           SoundWave
         </div>
+
+        <SearchBar />
       <div className="flex items-center gap-4">
         {isAdmin && (
           <Link to={"/admin"} className={cn(buttonVariants({ variant: "outline"}))}>
