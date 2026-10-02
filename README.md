@@ -82,6 +82,12 @@ A full-stack streaming music application (Spotify clone), with real time connect
     - cached queue memory for each user id
     - user can choose when to start the song in queue
     - dialog options on each song
+- Search Bar
+    - list of matching items pops out of maximum 6 rows
+    - display albums of song out of the album
+    - mouse click, scrolls, arrows up and down, enter and escape keys works
+    - album page redirects you to the album page
+    - song redirects to the album page and starts playing in the playback state
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
