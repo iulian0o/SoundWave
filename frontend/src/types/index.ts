@@ -44,3 +44,22 @@ export interface User {
   fullName: string;
   imageUrl: string;
 }
+
+export interface AlbumSearchResult {
+  type: "album";
+  _id: string;
+  title: string;
+  artist: string
+  imageUrl: string;
+}
+
+export interface SongSearchResult {
+  type: "song";
+  _id: string;
+  title: string;
+  artist: string
+  imageUrl: string
+  albumId: string;
+}
+
+export type SearchResult = AlbumSearchResult | SongSearchResult;
