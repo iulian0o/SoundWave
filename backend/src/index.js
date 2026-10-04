@@ -1,53 +1,57 @@
 import "./env.js";
-import express from 'express';
-import fileUpload from 'express-fileupload';
-import path from 'path';
-import cors from 'cors';
+import express from "express";
+import fileUpload from "express-fileupload";
+import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
-import { clerkMiddleware } from '@clerk/express';
+import { clerkMiddleware } from "@clerk/express";
 
-import { connectDB } from './lib/db.js';
+import { connectDB } from "./lib/db.js";
+import { TMP_DIR, startTempCleanup } from "./lib/tempCleanup.js";
 import { connectRedis } from "./lib/redis.js";
 import { initializeSocket } from "./lib/socket.js";
 
-import userRoutes from './routes/user.route.js';
-import authRoutes from './routes/auth.route.js';
-import adminRoutes from './routes/admin.route.js';
-import songRoutes from './routes/song.route.js';
-import albumRoutes from './routes/album.route.js';
-import statsRoutes from './routes/stats.route.js';
-import playbackStateRoutes from './routes/playbackState.route.js';
-import searchRoutes from './routes/search.route.js';
-import adminRequestRoutes from './routes/adminRequest.route.js';
+import userRoutes from "./routes/user.route.js";
+import authRoutes from "./routes/auth.route.js";
+import adminRoutes from "./routes/admin.route.js";
+import songRoutes from "./routes/song.route.js";
+import albumRoutes from "./routes/album.route.js";
+import statsRoutes from "./routes/stats.route.js";
+import playbackStateRoutes from "./routes/playbackState.route.js";
+import searchRoutes from "./routes/search.route.js";
+import adminRequestRoutes from "./routes/adminRequest.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT;
 
+
 const httpServer = createServer(app);
 initializeSocket(httpServer);
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 app.use(clerkMiddleware());
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: path.join(__dirname, "tmp"),
+    tempFileDir: TMP_DIR,
     createParentPath: true,
     limits: {
-      fileSize: 10 * 1024 * 1024
-  }
-  })
+      fileSize: 10 * 1024 * 1024,
+    },
+  }),
 );
 
-app.use("/api/playback-state", playbackStateRoutes)
+app.use("/api/playback-state", playbackStateRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -57,12 +61,29 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admin-requests", adminRequestRoutes);
 
+if (process.env.NODE_ENV === "production") {
+  const distPath = path.resolve(__dirname, "../../frontend/dist");
+  app.use(express.static(distPath));
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
+
 app.use((err, req, res, next) => {
-  res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message });
+  res
+    .status(500)
+    .json({
+      message:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
 });
 
 httpServer.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   connectDB();
   connectRedis().catch((err) => console.error("Redis connection failed:", err));
+  startTempCleanup();
 });
