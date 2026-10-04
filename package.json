@@ -4,7 +4,7 @@
   "description": "A full-stack streaming music application (Spotify clone), with real time connections built with **React + Typescript** on the frontend and **Express + MongoDB** on the backend, using **Clerk** for authentification and **Websockets** for real time message connections, **Redis** for caching playback state and volume state, **CI** pipeline for features testing before merging and **Docker** for creating images that instantiates a container such that it solves \"it runs on my computer\" problem.",
   "main": "index.js",
   "scripts": {
-    "build": "npm install --prefix backend && npm install --prefix frontend",
+    "build": "npm install --prefix backend && npm install --include=dev --prefix frontend && npm run build --prefix frontend",
     "start": "npm start --prefix backend"
   },
   "repository": {
