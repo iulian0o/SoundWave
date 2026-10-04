@@ -41,6 +41,7 @@ A full-stack streaming music application (Spotify clone), with real time connect
 - Real time messaging using websockets (`socket.io` & `socket.io-client`)
 - Caching volume and playback state using `redis`
 - Rate limiter using `redis` for song sharing
+- Admin request controllers
 
 ### Frontend
 - Auth Provider wired up with Clerk, plus a Google sign-in button
@@ -82,12 +83,17 @@ A full-stack streaming music application (Spotify clone), with real time connect
     - cached queue memory for each user id
     - user can choose when to start the song in queue
     - dialog options on each song
-- Search Bar
+- Search Bar:
     - list of matching items pops out of maximum 6 rows
     - display albums of song out of the album
     - mouse click, scrolls, arrows up and down, enter and escape keys works
     - album page redirects you to the album page
     - song redirects to the album page and starts playing in the playback state
+- Request Admin Role:
+    - user sends a request to super admin to become admin
+    - super admin accepts or rejects
+    - real time request and answer
+    - field to justify the admin role
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
