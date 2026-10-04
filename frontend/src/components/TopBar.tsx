@@ -1,12 +1,15 @@
 import { Link } from "react-router";
 import { LayoutDashboardIcon, LogOutIcon } from "lucide-react";
 import { Show, UserButton, useClerk } from "@clerk/react";
+
 import { useAuthStore } from './../stores/useAuthStore';
 import { usePlayerStore } from "../stores/usePlayerStore.ts";
 import { cn } from "../lib/utils.ts";
 import { buttonVariants, Button } from "./ui/button";
+
 import SignInOAuthButtons from "./SignInOAuthButtons";
 import SearchBar from "./SearchBar";
+import AdminRequestDialog from "./AdminRequestDialog";
 
 export default function TopBar() {
   const { isAdmin } = useAuthStore();
@@ -46,6 +49,7 @@ export default function TopBar() {
         </Show>
 
         <Show when="signed-in">
+          {!isAdmin && <AdminRequestDialog />}
           <Button variant="ghost" size="icon" onClick={handleSignOut}>
             <LogOutIcon className="size-4" />
           </Button>

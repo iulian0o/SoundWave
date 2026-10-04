@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Music } from "lucide-react";
+import { Navigate } from "react-router";
+import { Music, ShieldCheck } from "lucide-react";
 
 import { useAuthStore } from "./../../stores/useAuthStore";
 import { useMusicStore } from "../../stores/useMusicStore.ts";
@@ -13,9 +14,10 @@ import Header from "./components/Header";
 import DashboardStats from "./components/DashboardStats";
 import SongsTabContent from "./components/SongsTabContent";
 import AlbumsTabContent from "./components/AlbumsTabContent";
+import RequestsTabContent from "./components/RequestsTabContent";
 
 export default function AdminPage() {
-  const { isAdmin, isLoading } = useAuthStore();
+  const { isAdmin, isSuperAdmin ,isLoading } = useAuthStore();
   const { fetchAlbums, fetchSongs, fetchStats } = useMusicStore();
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function AdminPage() {
   }, [fetchAlbums, fetchSongs, fetchStats]);
 
   if (!isAdmin && isLoading) return <div>Unauthorized</div>;
+  if (!isAdmin) return <Navigate to="/" replace />
 
   return (
     <div
@@ -51,11 +54,26 @@ export default function AdminPage() {
             <Music className="mr-2 size-4" />
             Albums
           </TabsTrigger>
+
+          {isSuperAdmin && (
+            <TabsTrigger
+              value="requests"
+              className="data-[state=active]:bg-zinc-700"
+            >
+              <ShieldCheck className="mr-2 size-4" />
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="songs">
           <SongsTabContent />
         </TabsContent>
+
+        {isSuperAdmin && (
+        <TabsContent value="requests">
+          <RequestsTabContent />
+        </TabsContent>
+      )}
 
         <TabsContent value="albums">
           <AlbumsTabContent />

@@ -62,4 +62,16 @@ export interface SongSearchResult {
   albumId: string;
 }
 
+export interface AdminRequest {
+  _id: string;
+  clerkId: string;
+  reason: string;
+  status: AdminRequestStatus;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: { fullName: string, imageUrl: string } | null;
+}
+
+export type AdminRequestStatus = "pending" | "approved" | "rejected";
 export type SearchResult = AlbumSearchResult | SongSearchResult;
