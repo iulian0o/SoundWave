@@ -94,6 +94,8 @@ A full-stack streaming music application (Spotify clone), with real time connect
     - super admin accepts or rejects
     - real time request and answer
     - field to justify the admin role
+- 404 page:
+    - every unrelated path guides user to this page so they go back to home page
 
 ---
 *This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
