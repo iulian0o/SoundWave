@@ -1,5 +1,4 @@
-import { clerkClient } from "@clerk/express";
-
+import { getAdminStatus } from "../middleware/auth.middleware.js";
 import { Song } from "../models/song.model.js";
 import { Album } from "../models/album.model.js";
 import cloudinary from "../lib/cloudinary.js";
@@ -79,6 +78,10 @@ export const deleteSong = async (req, res, next) => {
     const { id } = req.params;
     const song = await Song.findById(id);
 
+    if (!song) {
+      return res.status(404).json({ message: "Song not found" });
+    }
+
     // if song belongs to an album, update the album songs array
     if (song.albumId) {
       await Album.findByIdAndUpdate(song.albumId, {
@@ -142,7 +145,7 @@ export const deleteAlbum = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    await Song.deleteMany({ album: id });
+    await Song.deleteMany({ albumId: id });
     await Album.findByIdAndDelete(id);
 
     res.status(200).json({ message: "Album deleted succesfully " });
@@ -160,10 +163,8 @@ export const checkAdmin = async (req, res, next) => {
         .status(401)
         .json({ message: "Unauthorized - you must be logged in" });
 
-    const currentUser = await clerkClient.users.getUser(userId);
-    const isAdmin =
-      process.env.ADMIN_EMAIL === currentUser.primaryEmailAddress?.emailAddress;
-    res.status(200).json({ admin: isAdmin });
+    const { isAdmin, isSuperAdmin } = await getAdminStatus(userId);
+    res.status(200).json({ admin: isAdmin, superAdmin: isSuperAdmin });
   } catch (error) {
     next(error);
   }

@@ -11,13 +11,14 @@ export const checkShareLimit = async (userId, limit = 10, windowSec = 60) => {
       
       if (count === 1 || ttl < 0) {
         await client.expire(key, windowSec);
-
-        if (count > limit) {
-          return { allowed: false, retryAfter: ttl > 0 ? ttl : windowSec }
-        }
-
-        return { allowed: true }
       }
+
+      if (count > limit) {
+        return { allowed: false, retryAfter: ttl > 0 ? ttl : windowSec }
+      }
+
+      return { allowed: true }
+      
     } catch (error) {
       console.error('Rate limit error: ', error);
       return { allowed: true };

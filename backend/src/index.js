@@ -19,6 +19,7 @@ import albumRoutes from './routes/album.route.js';
 import statsRoutes from './routes/stats.route.js';
 import playbackStateRoutes from './routes/playbackState.route.js';
 import searchRoutes from './routes/search.route.js';
+import adminRequestRoutes from './routes/adminRequest.route.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +55,7 @@ app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/admin-requests", adminRequestRoutes);
 
 app.use((err, req, res, next) => {
   res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message });
