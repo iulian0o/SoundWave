@@ -4,6 +4,49 @@ A full-stack streaming music application (Spotify clone), with real time connect
 
 ## How's like to use SoundWave?
 
+**1**. The familiar UI (Spotify look-alike) makes it eassier for a user to use this application. Responsive layout, cards, dialog and tabs and fast response from the functionability.
+
+
+https://github.com/user-attachments/assets/f4dc4a6a-8355-4418-8b8f-7e30cd136961
+
+
+**2**. Each user will have his own inputs memorised into cache memory. The playback state, volume state and queue will stay in the same place, each user left.
+
+
+https://github.com/user-attachments/assets/605172ba-4d37-42dc-80f2-aaa9e05962a8
+
+
+**3**. Real time message connection between users, makes the experience feel more connected to other people's taste, mood or thoughts. The message page has real time message response and real time sharing songs, palyable directly from the card.
+
+
+https://github.com/user-attachments/assets/1b9d7501-0149-4d88-9f17-b8c360bad097
+
+
+Rate limiter doe not allow sharing abuse. The user has to wait for the token to refresh.
+
+
+https://github.com/user-attachments/assets/09caf436-50c4-48b0-b0b0-945c74e8b8a8
+
+
+**4**. Better experience with the content needed, using the Search bar component to find your song or album of choice. 
+**Functionall keys: Arrow Up, Arrow Down, Enter, Escape**.
+
+
+https://github.com/user-attachments/assets/c82d352f-5f78-4a18-9fbe-30b103dbdc2e
+
+
+**5**. CRUD operations: receive, create, update, patch or delete content. Admin has the possibility to upload an album or to add a song to the album, to update the nqame or the year of the song or to delete content. A regular user can send a request to become admin, justifying the reason, and the super admin can accept or deny the request.
+
+
+https://github.com/user-attachments/assets/dfe60eef-298c-4eac-b1fa-578e3133c132
+
+
+**6**. Unrelated path, access the 404 page that helps you to redirect back to the home page. Unauthorized access to the admin path is forbidden.
+
+
+https://github.com/user-attachments/assets/2d0e8bd5-4f1c-4e05-bcb3-e7f764bdc59d
+
+
 ## Tech Stack
 
 **Frontend**
@@ -24,6 +67,7 @@ A full-stack streaming music application (Spotify clone), with real time connect
 - express-fileupload for handling uploads
 - Socket.io, included for real-time features
 - Redis, caches the playback state and volume state
+- Cron, deletes temporary files saved from cloudinary, in 1h
 
 ## Progress So Far
 
@@ -98,4 +142,4 @@ A full-stack streaming music application (Spotify clone), with real time connect
     - every unrelated path guides user to this page so they go back to home page
 
 ---
-*This README reflects progress only, setup and usage instructions will be added once the app is closer to complete.*
+*I do not own the content of the artists. This application it is not used in a commercial way, and the credits are shown in the name of the songs or artists*
